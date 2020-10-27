@@ -2,6 +2,9 @@
 
 ![app](./images/app.png)
 
+## Version 0.2.1
+* Added command line args for ip and port => `python main.py [ip] [port]`, no args will use localhost and port 9000
+
 ## Version 0.2
 * I still don't know what I'm doing with threads, but it should :tm: be better
 * bug fixes

@@ -5,6 +5,7 @@ import socket
 import threading
 import tkinter as tk
 from tkinter import StringVar
+import sys
 
 import accProtocol
 
@@ -267,10 +268,22 @@ if __name__ == "__main__":
             "width": 8
         }]
 
+    args = sys.argv
+    argc = len(args)
+    
+    ip = "127.0.0.1"
+    port = 9000
+    
+    if argc > 1:
+        ip = args[1]
+        
+    if argc > 2:
+        port = int(args[2])
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(("", 3400))
 
-    test_instance = accProtocol.Leaderboard(sock, "127.0.0.1", 9000)
+    test_instance = accProtocol.Leaderboard(sock, ip, 9000)
 
     test_instance.connect("Ryan Rennoir", "asd", 250, "")
 
