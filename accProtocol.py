@@ -118,7 +118,7 @@ class Nationality(Enum):
 
 class CarLocation(Enum):
 
-    NONE = 0,
+    NONE = 0
     Track = 1
     Pitlane = 2
     PitEntry = 3
@@ -145,7 +145,7 @@ class CupCategory(Enum):
 class SessionType(Enum):
 
     Practice = 0
-    Qualifying = 1
+    Qualifying = 4
     Superpole = 9
     Race = 10
     Hotlap = 11
@@ -481,7 +481,7 @@ class Leaderboard:
             self.request_entry_list()
 
         elif packet_type == 2:
-            print("Real Time Update")
+            # print("Real Time Update")
             self.session.update(cur)
 
         elif packet_type == 3:
@@ -515,7 +515,8 @@ class Leaderboard:
             self.entry_list.update_car(cur)
 
         elif packet_type == 7:
-            print("Broadcasting Event => Don't care (:")
+            # print("Broadcasting Event => Don't care (:")
+            pass
 
     def add_to_leaderboard(self) -> None:
 
@@ -526,8 +527,15 @@ class Leaderboard:
 
     def update_leaderboard(self, data: RealTimeCarUpdate) -> None:
 
-        if len(self.entry_list.entry_list[data.car_index].drivers) > 0:
-            car_info = self.entry_list.entry_list[data.car_index]
+        entry_list = self.entry_list.entry_list
+
+        entry_index = -1
+        for index, entry in enumerate(entry_list):
+            if entry.car_index == data.car_index:
+                entry_index = index
+
+        if entry_index >= 0 and len(entry_list[entry_index].drivers) > 0:
+            car_info = entry_list[entry_index]
             drivers = car_info.drivers
 
             race_number = car_info.race_number
@@ -541,7 +549,7 @@ class Leaderboard:
             race_number = -1
             cup_category = CupCategory.National
             model_type = -1
-            team_name = ""
+            team_name = "Team Name"
             first_name = "First Name"
             last_name = "Last Name"
 
