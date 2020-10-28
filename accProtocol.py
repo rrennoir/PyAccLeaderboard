@@ -1,7 +1,9 @@
-from Cursor import Cursor
-from enum import Enum, auto
 import datetime
+import socket
 import sys
+from enum import Enum, auto
+
+from Cursor import Cursor
 
 
 def write_int(data: int, type: str) -> bytes:
@@ -456,7 +458,7 @@ class Leaderboard:
         self.session = RealTimeUpdate()
         self.track = TrackData()
         self.entry_list = EntryList()
-        self.work = True
+        self.connected = False
 
         self.leaderboard_data = {}
 
@@ -467,56 +469,75 @@ class Leaderboard:
 
     def update(self):
 
-        data, addr = self._socket.recvfrom(2048)
-        # print(data, addr)  # Debug
+        # Add timeout after 1s delay to no get stuck for ever
+        self._socket.settimeout(1.0)
 
-        cur = Cursor(data)
-        packet_type = cur.read_u8()
+        data = None
+        try:
+            data, addr = self._socket.recvfrom(2048)
+            # print(data, addr)  # Debug
 
-        if packet_type == 1:
-            print("Registration Result")
-            self.registration.update(cur)
+        except socket.error:
+            self.connected = False
 
-            self.request_track_data()
-            self.request_entry_list()
+        except socket.timeout:
+            self.connected = False
 
-        elif packet_type == 2:
-            # print("Real Time Update")
-            self.session.update(cur)
+        finally:
+            self._socket.settimeout(None)
 
-        elif packet_type == 3:
-            # print("Real Time Car Update")
-            car_update = RealTimeCarUpdate(cur)
+        if data:
 
-            is_unkown = True
-            for car in self.entry_list.entry_list:
-                if car_update.car_index == car.car_index:
-                    is_unkown = False
+            cur = Cursor(data)
+            packet_type = cur.read_u8()
 
-            last_request = datetime.datetime.now() - self._last_time_requested
-            if is_unkown and last_request.total_seconds() >= 1:
+            if packet_type == 1:
+                print("Receving Registration Result")
+                self.registration.update(cur)
+
+                self.request_track_data()
                 self.request_entry_list()
-                self._last_time_requested = datetime.datetime.now()
 
-            elif not is_unkown:
-                self.update_leaderboard(car_update)
+            elif packet_type == 2:
+                # print("Receving Real Time Update")
+                self.session.update(cur)
 
-        elif packet_type == 4:
-            print("Entry List")
-            self.entry_list.update(cur)
-            self.add_to_leaderboard()
+            elif packet_type == 3:
+                # print("Receving Real Time Car Update")
+                car_update = RealTimeCarUpdate(cur)
+                self.is_new_entry(car_update)
 
-        elif packet_type == 5:
-            print("Track Data")
-            self.track.update(cur)
+            elif packet_type == 4:
+                print("Receving Entry List")
+                self.entry_list.update(cur)
+                self.add_to_leaderboard()
 
-        elif packet_type == 6:
-            print("Entry List Car")
-            self.entry_list.update_car(cur)
+            elif packet_type == 5:
+                print("Receving Track Data")
+                self.track.update(cur)
 
-        elif packet_type == 7:
-            # print("Broadcasting Event => Don't care (:")
-            pass
+            elif packet_type == 6:
+                # print("Receving Entry List Car")
+                self.entry_list.update_car(cur)
+
+            elif packet_type == 7:
+                # print(" Receving Broadcasting Event => Don't care (:")
+                pass
+
+    def is_new_entry(self, car_update):
+
+        is_unkown = True
+        for car in self.entry_list.entry_list:
+            if car_update.car_index == car.car_index:
+                is_unkown = False
+
+        last_request = datetime.datetime.now() - self._last_time_requested
+        if is_unkown and last_request.total_seconds() >= 1:
+            self.request_entry_list()
+            self._last_time_requested = datetime.datetime.now()
+
+        elif not is_unkown:
+            self.update_leaderboard(car_update)
 
     def add_to_leaderboard(self) -> None:
 
@@ -584,6 +605,7 @@ class Leaderboard:
 
         print(f"Request Connection: {list(msg)}")
         self._socket.sendto(msg, (self._ip, self._port))
+        self.connected = True
 
     def disconnect(self) -> None:
 
