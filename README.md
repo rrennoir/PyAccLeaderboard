@@ -6,6 +6,7 @@
 
 * Handle error and timeout, now even if the game is closed or the session is over the app **shouldn't** crash and wait to reconnect
 * ACC worker thread handle socket stuff by itself
+* Add title (***very important***)
 * Make print message cutier or uglier :grimacing:
 * Added some comment may be if I'm not to lazy the code will be commented :joy:
 * Make the first letter uppercase in the previous patch note because uppercase life matters :neckbeard:

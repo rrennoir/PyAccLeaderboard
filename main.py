@@ -163,6 +163,7 @@ class LeaderboardGui:
 
         self.queue_in = queue_in
         self.gui_root = tk.Tk()
+        self.gui_root.title("PyAccLeaderboard")
         self.gui_root.configure(background="black")
         self.status = tk.StringVar(self.gui_root)
 
