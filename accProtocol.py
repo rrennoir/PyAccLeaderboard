@@ -424,7 +424,7 @@ class EntryList:
                 car_info = car
 
         if not car_info:
-            print("Entry list update for unknow car index")
+            print("Entry List Car: Car ID Unknow")
             return
 
         car_info.update(cur)
@@ -629,7 +629,7 @@ class Leaderboard:
             self._socket.sendto(msg, (self._ip, self._port))
 
         else:
-            print("no id yet can't send entry list request !")
+            print("Request Entry List: No Connection ID !")
 
     def request_track_data(self) -> None:
 
