@@ -2,10 +2,9 @@ import copy
 import datetime
 import queue
 import socket
+import sys
 import threading
 import tkinter as tk
-from tkinter import StringVar
-import sys
 
 import accProtocol
 
@@ -165,7 +164,7 @@ class LeaderboardGui:
         self.queue_in = queue_in
         self.gui_root = tk.Tk()
         self.gui_root.configure(background="black")
-        self.status = StringVar(self.gui_root)
+        self.status = tk.StringVar(self.gui_root)
 
         self.table = Table(self.gui_root, header, 26)
         self.data = None
@@ -187,23 +186,46 @@ class LeaderboardGui:
         self.gui_root.after(self.delay, self.read_queue)
 
 
-def acc_run(instance, q):
+def acc_run(info: dict, q: queue.Queue):
 
+    print("Starting ACC Worker Thread...")
     global stop_worker
 
-    print("enter acc run thread")
-    last_message = datetime.datetime.now()
+    socket = info["socket"]
+    ip = info["ip"]
+    port = info["port"]
+    name = info["name"]
+    password = info["password"]
+    speed = info["speed"]
+    cmd_password = info["cmd_password"]
 
+    instance = accProtocol.Leaderboard(socket, ip, port)
+
+    instance.connect(name, password, speed, cmd_password)
+
+    last_connection = datetime.datetime.now()
+    last_message = datetime.datetime.now()
     while not stop_worker:
 
-        instance.update()
-
         now = datetime.datetime.now()
-        if (now - last_message).total_seconds() > 1:
-            print("add to queue")
-            data_copy = copy.deepcopy(instance.leaderboard_data)
-            last_message = now
-            q.put(data_copy)
+        # if connection was lost or not established wait 2s before asking again
+        if (not instance.connected and
+                (now - last_connection).total_seconds() > 2):
+            instance.connect(name, password, speed, cmd_password)
+            last_connection = datetime.datetime.now()
+
+        else:
+            instance.update()
+
+            # Send data to the queue at the same rate
+            # as the GUI check the queue
+            if (now - last_message).total_seconds() > 1:
+                data_copy = copy.deepcopy(instance.leaderboard_data)
+                last_message = now
+                q.put(data_copy)
+
+    print("Closing ACC Worker Thread...")
+    instance.disconnect()
 
 
 stop_worker = False
@@ -270,26 +292,32 @@ if __name__ == "__main__":
 
     args = sys.argv
     argc = len(args)
-    
+
     ip = "127.0.0.1"
     port = 9000
-    
+
     if argc > 1:
         ip = args[1]
-        
+
     if argc > 2:
         port = int(args[2])
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(("", 3400))
 
-    test_instance = accProtocol.Leaderboard(sock, ip, 9000)
-
-    test_instance.connect("Ryan Rennoir", "asd", 250, "")
+    instance_info = {
+        "ip": ip,
+        "port": port,
+        "socket": sock,
+        "name": "Ryan Rennoir",
+        "password": "asd",
+        "speed": 250,
+        "cmd_password": ""
+    }
 
     q = queue.Queue()
 
-    thread_acc = threading.Thread(target=acc_run, args=(test_instance, q))
+    thread_acc = threading.Thread(target=acc_run, args=(instance_info, q))
     thread_acc.start()
 
     gui = LeaderboardGui(q, table_header)
@@ -299,7 +327,5 @@ if __name__ == "__main__":
     stop_worker = True
 
     thread_acc.join()
-    print("ACC Worker Thread closed")
-    test_instance.disconnect()
     sock.close()
     print("Socket closed")
