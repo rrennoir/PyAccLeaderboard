@@ -577,6 +577,7 @@ class Leaderboard:
         self.leaderboard_data[data.car_index].update({
             "position": data.position,
             "car number": race_number,
+            "car id": data.car_index,
             "cup category": cup_category.name,
             "cup position": data.cup_position,
             "manufacturer": model_type,

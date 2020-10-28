@@ -91,7 +91,8 @@ class Table(tk.Frame):
         while position <= nb_entries:
 
             for entry in data.keys():
-                if len(data[entry]) > 0 and position == data[entry]["position"]:
+                if (len(data[entry]) > 0 and
+                        position == data[entry]["position"]):
                     entries.append(data[entry])
 
             position += 1
@@ -156,6 +157,13 @@ class Table(tk.Frame):
 
             entry_id += 1
 
+    def clear_entries(self) -> None:
+
+        for grid_y in range(1, self.row):
+            for grid_x in range(self.column):
+
+                self.labels[grid_y][grid_x].configure(text="")
+
 
 class LeaderboardGui:
 
@@ -169,22 +177,50 @@ class LeaderboardGui:
 
         self.table = Table(self.gui_root, header, 26)
         self.data = None
+        self.local_car_ids = []
         self.delay = 1000
 
         self.gui_root.after(self.delay, self.read_queue)
 
     def read_queue(self) -> None:
 
-        print("read queue")
-
         try:
-            self.data = self.queue_in.get_nowait()
-            self.table.update_text(self.data)
+            new_data = self.queue_in.get_nowait()
+
+            valide_data = True
+            for entry in new_data:
+                if len(new_data[entry]) == 0:
+                    valide_data = False
+
+            if valide_data:
+                self.data = new_data
+                self.update_local_entries()
+                self.table.update_text(self.data)
 
         except queue.Empty:
-            print("read_queue: queue empty")
+            print("Read Queue: queue empty")
 
         self.gui_root.after(self.delay, self.read_queue)
+
+    def update_local_entries(self) -> None:
+
+        new_entries = False
+        if len(self.data) != len(self.local_car_ids):
+            new_entries = True
+
+        else:
+            for key in self.data.keys():
+                if self.data[key]["car id"] not in self.local_car_ids:
+                    new_entries = True
+
+        if new_entries:
+            print("Reviced new entry list")
+            self.local_car_ids.clear()
+            for key in self.data:
+                self.local_car_ids.append(self.data[key]["car id"])
+
+            print("Clearing leaderboard cell...")
+            self.table.clear_entries()
 
 
 def acc_run(info: dict, q: queue.Queue):
