@@ -1,3 +1,4 @@
+import struct
 import sys
 
 
@@ -52,10 +53,9 @@ class Cursor:
     def read_f32(self) -> float:
 
         data = self._byte_array[self._cursor: self._cursor + 4]
-        a = data.hex()
         self._cursor += 4
 
-        return float.fromhex(data.hex())
+        return struct.unpack("<f", data)[0]
 
     def read_string(self) -> str:
 
