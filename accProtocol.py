@@ -460,7 +460,19 @@ class Leaderboard:
         self.entry_list = EntryList()
         self.connected = False
 
-        self.leaderboard_data = {}
+        self.leaderboard_data = {
+            "entries": {},
+            "session": {
+                "session type": SessionType.NONE.name,
+                "session time": datetime.datetime.fromtimestamp(0),
+                "session end time": datetime.datetime.fromtimestamp(0),
+                "air temp": 0,
+                "track temp": 0,
+                "clouds": 0,
+                "rain level": 0,
+                "wetness": 0
+            },
+        }
 
         self._socket = socket
         self._ip = acc_ip
@@ -501,6 +513,7 @@ class Leaderboard:
             elif packet_type == 2:
                 # print("Receving Real Time Update")
                 self.session.update(cur)
+                self.update_leaderboard_session()
 
             elif packet_type == 3:
                 # print("Receving Real Time Car Update")
@@ -541,10 +554,10 @@ class Leaderboard:
 
     def add_to_leaderboard(self) -> None:
 
-        self.leaderboard_data.clear()
+        self.leaderboard_data["entries"].clear()
 
         for entry in self.entry_list.entry_list:
-            self.leaderboard_data.update({entry.car_index: {}})
+            self.leaderboard_data["entries"].update({entry.car_index: {}})
 
     def update_leaderboard(self, data: RealTimeCarUpdate) -> None:
 
@@ -574,7 +587,7 @@ class Leaderboard:
             first_name = "First Name"
             last_name = "Last Name"
 
-        self.leaderboard_data[data.car_index].update({
+        self.leaderboard_data["entries"][data.car_index].update({
             "position": data.position,
             "car number": race_number,
             "car id": data.car_index,
@@ -593,6 +606,20 @@ class Leaderboard:
             "sectors": data.last_lap.splits,
             "car location": data.car_location.name
         })
+
+    def update_leaderboard_session(self) -> None:
+
+        session = self.leaderboard_data["session"]
+        session.clear()
+
+        session["session type"] = self.session.session_type.name
+        session["session time"] = self.session.session_time
+        session["session end time"] = self.session.session_end_time
+        session["air temp"] = self.session.ambient_temp
+        session["track temp"] = self.session.track_temp
+        session["clouds"] = self.session.clouds
+        session["rain level"] = self.session.rain_level
+        session["wetness"] = self.session.wetness
 
     def connect(self, name: str, psw: str, speed: int, cmd_psw: str) -> None:
 
