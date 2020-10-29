@@ -2,13 +2,26 @@
 
 ![app](./images/app.png)
 
+## Version 0.4
+
+* Major GUI redesing
+* Add a font that doesn't looks like shit :joy:
+* Clear GUI when entry list update is reveiced
+* Fix bug when data send by the acc thread isn't complete during entry list update
+* Fixed broken read_f32() function returning garbage value
+* Add session information (time left, cloud cover, rain level, temps, ect) to app screen
+* Add cute emoji to indicate car location (in pit or track)
+* Changed some header title
+* Updated accProtocol to get session information
+* Plus other stuff that I already forgot ...
+
 ## Version 0.3
 
 * Handle error and timeout, now even if the game is closed or the session is over the app **shouldn't** crash and wait to reconnect
 * ACC worker thread handle socket stuff by itself
-* Add title (***very important***)
+* Add window title (***very important***)
 * Make print message cutier or uglier :grimacing:
-* Added some comment may be if I'm not to lazy the code will be commented :joy:
+* Added some comment may be if I'm not too lazy the code will be commented :joy:
 * Make the first letter uppercase in the previous patch note because uppercase life matters :neckbeard:
 * EMOJI EVERYWHERE !!! :smiling_imp: :blush:
 
