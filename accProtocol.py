@@ -3,37 +3,7 @@ import socket
 import sys
 from enum import Enum, auto
 
-from Cursor import Cursor
-
-
-def write_int(data: int, type: str) -> bytes:
-
-    if type == "u8":
-        return (data).to_bytes(1, sys.byteorder, signed=False)
-
-    elif type == "u16":
-        return (data).to_bytes(2, sys.byteorder, signed=False)
-
-    elif type == "u32":
-        return (data).to_bytes(4, sys.byteorder, signed=False)
-
-    elif type == "i16":
-        return (data).to_bytes(2, sys.byteorder, signed=True)
-
-    elif type == "i32":
-        return (data).to_bytes(4, sys.byteorder, signed=True)
-
-    else:
-        print("Incorrect type")
-
-
-def write_str(string: str) -> bytes:
-
-    data = b""
-    data += write_int(len(string), "u16")
-    data += bytearray(string, "utf-8")
-
-    return data
+from Cursor import Cursor, ByteWritter
 
 
 class Nationality(Enum):
@@ -623,25 +593,25 @@ class Leaderboard:
 
     def connect(self, name: str, psw: str, speed: int, cmd_psw: str) -> None:
 
-        msg = b""
-        msg += write_int(1, "u8")
-        msg += write_int(4, "u8")
-        msg += write_str(name)
-        msg += write_str(psw)
-        msg += write_int(speed, "i32")
-        msg += write_str(cmd_psw)
+        msg = ByteWritter()
+        msg.write_u8(1)
+        msg.write_u8(4)
+        msg.write_str(name)
+        msg.write_str(psw)
+        msg.write_i32(speed)
+        msg.write_str(cmd_psw)
 
-        print(f"Request Connection: {list(msg)}")
-        self._socket.sendto(msg, (self._ip, self._port))
+        print(f"Request Connection: {list(msg.get_bytes())}")
+        self._socket.sendto(msg.get_bytes(), (self._ip, self._port))
         self.connected = True
 
     def disconnect(self) -> None:
 
-        msg = b""
-        msg += write_int(9, "u8")
+        msg = ByteWritter()
+        msg.write_u8(9)
 
-        print(f"Disconnect request: {list(msg)}")
-        self._socket.sendto(msg, (self._ip, self._port))
+        print(f"Disconnect request: {list(msg.get_bytes())}")
+        self._socket.sendto(msg.get_bytes(), (self._ip, self._port))
 
     def request_entry_list(self) -> None:
 
@@ -649,12 +619,12 @@ class Leaderboard:
 
         if c_id != -1:
 
-            msg = b""
-            msg += write_int(10, "u8")
-            msg += write_int(c_id, "i32")
+            msg = ByteWritter()
+            msg.write_u8(10)
+            msg.write_i32(c_id)
 
-            print(f"Request Entry List: {list(msg)}")
-            self._socket.sendto(msg, (self._ip, self._port))
+            print(f"Request Entry List: {list(msg.get_bytes())}")
+            self._socket.sendto(msg.get_bytes(), (self._ip, self._port))
 
         else:
             print("Request Entry List: No Connection ID !")
@@ -663,9 +633,9 @@ class Leaderboard:
 
         c_id = self.registration.connection_id
 
-        msg = b""
-        msg += write_int(11, "u8")
-        msg += write_int(c_id, "i32")
+        msg = ByteWritter()
+        msg.write_u8(11)
+        msg.write_i32(c_id)
 
-        print(f"Request Track Data: {list(msg)}")
-        self._socket.sendto(msg, (self._ip, self._port))
+        print(f"Request Track Data: {list(msg.get_bytes())}")
+        self._socket.sendto(msg.get_bytes(), (self._ip, self._port))
