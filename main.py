@@ -114,7 +114,7 @@ class Table(tk.Frame):
 
             self.labels.append(column_labels)
 
-    def update_text(self, data):
+    def update_text(self, data, local_data):
 
         entries = []
         position = 1
@@ -132,57 +132,57 @@ class Table(tk.Frame):
         if nb_entries == 0 or len(entries) == 0:
             return
 
-        entry_id = 0
         for grid_y in range(nb_entries):
 
             for grid_x in range(self.column):
 
                 if grid_x == 0:
-                    string = entries[entry_id]["position"]
+                    string = entries[grid_y]["position"]
 
                 elif grid_x == 1:
-                    string = entries[entry_id]["car number"]
+                    string = entries[grid_y]["car_number"]
 
                 elif grid_x == 2:
-                    string = entries[entry_id]["cup category"]
+                    string = entries[grid_y]["cup_category"]
 
                 elif grid_x == 3:
-                    string = entries[entry_id]["manufacturer"]
+                    string = entries[grid_y]["manufacturer"]
 
                 elif grid_x == 4:
-                    team = entries[entry_id]["team"]
-                    first_name = entries[entry_id]["driver"]['first name']
-                    last_name = entries[entry_id]["driver"]['last name']
+                    team = entries[grid_y]["team"]
+                    first_name = entries[grid_y]["driver"]['first_name']
+                    last_name = entries[grid_y]["driver"]['last_name']
                     string = f"{team}\n{first_name} {last_name}"
 
                 elif grid_x == 5:
-                    string = from_ms(entries[entry_id]["best session lap"])
+                    string = from_ms(entries[grid_y]["best_session_lap"])
 
                 elif grid_x == 6:
-                    string = from_ms(entries[entry_id]["current lap"])
+                    string = from_ms(entries[grid_y]["current_lap"])
 
                 elif grid_x == 7:
-                    string = entries[entry_id]["lap"]
+                    string = entries[grid_y]["lap"]
 
                 elif grid_x == 8:
-                    string = from_ms(entries[entry_id]["last lap"])
+                    string = from_ms(entries[grid_y]["last_lap"])
 
-                elif grid_x == 9 and len(entries[entry_id]["sectors"]) > 0:
-                    string = from_ms(entries[entry_id]["sectors"][0])
+                elif grid_x == 9 and len(entries[grid_y]["sectors"]) > 0:
+                    string = from_ms(entries[grid_y]["sectors"][0])
 
-                elif grid_x == 10 and len(entries[entry_id]["sectors"]) > 0:
-                    string = from_ms(entries[entry_id]["sectors"][1])
+                elif grid_x == 10 and len(entries[grid_y]["sectors"]) > 0:
+                    string = from_ms(entries[grid_y]["sectors"][1])
 
-                elif grid_x == 11 and len(entries[entry_id]["sectors"]) > 0:
-                    string = from_ms(entries[entry_id]["sectors"][2])
+                elif grid_x == 11 and len(entries[grid_y]["sectors"]) > 0:
+                    string = from_ms(entries[grid_y]["sectors"][2])
 
                 elif grid_x == 12:
-                    # TODO
-                    string = "0"
+                    car_id = entries[grid_y]["car_id"]
+                    pits = local_data[car_id]["pits"]
+                    string = f"{pits}"
 
                 elif grid_x == 13:
 
-                    location = entries[entry_id]["car location"]
+                    location = entries[grid_y]["car_location"]
                     if location == "Track":
                         # Gas station emoji
                         string = "\U0001F3CE"
@@ -195,8 +195,6 @@ class Table(tk.Frame):
                     string = ""
 
                 self.labels[grid_y][grid_x].configure(text=string)
-
-            entry_id += 1
 
     def clear_entries(self) -> None:
 
@@ -252,7 +250,7 @@ class LeaderboardGui(tk.Tk):
         canvas.configure(yscrollcommand=v_scrollbar.set)
 
         table_frame = tk.Frame(canvas)
-        self.table = Table(table_frame, self.font, info["table"], 26)
+        self.table = Table(table_frame, self.font, info["table"], 82)
 
         canvas.create_window((0, 0), window=table_frame, anchor=tk.NW)
 
@@ -260,12 +258,15 @@ class LeaderboardGui(tk.Tk):
         bbox = canvas.bbox(tk.ALL)
 
         w, h = bbox[2] - bbox[1], bbox[3] - bbox[1]
-        dw, dh = int((w / 14) * 14), int((h / 26) * 10)
+        dw, dh = int((w / 14) * 14), int((h / 82) * 10)
         canvas.configure(scrollregion=bbox, width=dw, height=dh)
 
         self.queue_in = queue_in
         self.data = None
-        self.local_data = {}
+        self.local_data = {
+            "session": "",
+            "entries": {}
+        }
         self.local_car_ids = []
         self.delay = 1000
 
@@ -285,7 +286,7 @@ class LeaderboardGui(tk.Tk):
             if valide_data:
                 self.data = new_data
                 self.update_local_entries()
-                self.table.update_text(self.data)
+                self.table.update_text(self.data, self.local_data["entries"])
                 self.update_session()
 
         except queue.Empty:
@@ -296,31 +297,65 @@ class LeaderboardGui(tk.Tk):
     def update_local_entries(self) -> None:
 
         entries = self.data["entries"]
+        local_entries = self.local_data["entries"]
+        session = self.data["session"]["session_type"]
+        local_session = self.local_data["session"]
 
         new_entries = False
-        if len(entries) != len(self.local_car_ids):
+        if len(entries) != len(local_entries):
             new_entries = True
 
         else:
             for key in entries.keys():
-                if entries[key]["car id"] not in self.local_car_ids:
+                if entries[key]["car_id"] not in local_entries:
                     new_entries = True
 
         if new_entries:
             logging.debug("Reviced new entry list")
-            self.local_car_ids.clear()
-            for key in entries.keys():
-                self.local_car_ids.append(entries[key]["car id"])
+            new_data = {}
 
+            for key in entries.keys():
+
+                car_id = entries[key]["car_id"]
+                if car_id in local_entries:
+                    new_data.update({car_id: local_entries[car_id]})
+
+                else:
+                    new_data.update({car_id: {
+                        "location": "Pitlane",
+                        "pits": 0
+                    }})
+
+            self.local_data.update({"entries": new_data})
             logging.debug("Clearing leaderboard cell...")
             self.table.clear_entries()
+
+        elif session != local_session:
+            for car_id in local_entries:
+                local_entries.update({car_id: {
+                    "location": "Pitlane",
+                    "pits": 0
+                }})
+
+            self.local_data["session"] = session
+
+        else:
+            for car_id in local_entries:
+
+                previous = local_entries[car_id]["location"]
+                actual = entries[car_id]["car_location"]
+                if previous == "Track" and actual != "Track":
+                    local_entries[car_id]["pits"] += 1
+
+                local_entries[car_id]["location"] = actual
 
     def build_session_info(self, parent, info) -> None:
 
         for i in range(len(info)):
             width = info[i]["width"]
             cell = create_cell(
-                parent, "", font=self.info_font, max_width=width, relief=tk.RIDGE)
+                parent, "", font=self.info_font,
+                max_width=width, relief=tk.RIDGE)
             cell.grid(row=0, column=i, padx=2)
             self.session_info.append(cell)
 
@@ -330,22 +365,22 @@ class LeaderboardGui(tk.Tk):
         if len(session) > 0:
             for i, cell in enumerate(self.session_info):
                 if i == 0:
-                    cell.configure(text=f"Session: {session['session type']}")
+                    cell.configure(text=f"Session: {session['session_type']}")
 
                 elif i == 1:
-                    time_left = from_date_time(session["session end time"])
+                    time_left = from_date_time(session["session_end_time"])
                     cell.configure(text=f"Time left: {time_left}")
 
                 elif i == 2:
-                    time_elapsed = from_date_time(session['session time'])
+                    time_elapsed = from_date_time(session['session_time'])
                     cell.configure(text=f"Time elapsed: {time_elapsed}")
 
                 elif i == 3:
-                    air_temps = session["air temp"]
+                    air_temps = session["air_temp"]
                     cell.configure(text=f"Air: {air_temps}°C")
 
                 elif i == 4:
-                    track_temps = session["track temp"]
+                    track_temps = session["track_temp"]
                     cell.configure(text=f"Track: {track_temps}°C")
 
                 elif i == 5:
@@ -353,7 +388,7 @@ class LeaderboardGui(tk.Tk):
                     cell.configure(text=f"Clouds: {clouds}%")
 
                 elif i == 6:
-                    rain_level = session["rain level"]
+                    rain_level = session["rain_level"]
                     cell.configure(text=f"Rain: {rain_level}%")
 
                 elif i == 7:
