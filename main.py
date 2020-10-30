@@ -1,6 +1,7 @@
 import copy
 import datetime
 import queue
+import logging
 import socket
 import sys
 import threading
@@ -63,7 +64,7 @@ def from_date_time(time: datetime.datetime) -> str:
 
 
 def create_cell(parent, text, bg="white", font=None, max_width=0,
-                height=1, anchor=tk.CENTER):
+                height=1, anchor=tk.CENTER, relief=tk.FLAT):
 
     width = len(text)
     if max_width > 0:
@@ -72,12 +73,12 @@ def create_cell(parent, text, bg="white", font=None, max_width=0,
     if font:
         cell = tk.Label(
             parent, text=text, bg=bg, width=width, height=height,
-            justify=tk.LEFT, anchor=anchor, font=font)
+            justify=tk.LEFT, anchor=anchor, font=font, relief=relief)
 
     else:
         cell = tk.Label(
             parent, text=text, bg=bg, width=width, height=height,
-            justify=tk.LEFT, anchor=anchor)
+            justify=tk.LEFT, anchor=anchor, relief=relief)
 
     return cell
 
@@ -187,6 +188,7 @@ class Table(tk.Frame):
                         string = "\U0001F3CE"
 
                     else:
+                        # Race car emoji
                         string = "\u26FD"
 
                 else:
@@ -206,7 +208,7 @@ class Table(tk.Frame):
 
 class LeaderboardGui(tk.Tk):
 
-    def __init__(self, queue_in=None, header=None, *args, **kargs) -> None:
+    def __init__(self, queue_in=None, info=None, *args, **kargs) -> None:
         tk.Tk.__init__(self, *args, **kargs)
 
         self.title("PyAccLeaderboard")
@@ -215,9 +217,10 @@ class LeaderboardGui(tk.Tk):
         self.rowconfigure(0, weight=1)
 
         self.font = Font(family="calibri", size=11)
+        self.info_font = Font(family="calibri", size=12)
 
         # Base Frame
-        main_frame = tk.Frame(self)
+        main_frame = tk.Frame(self, bg="black")
         main_frame.grid(sticky=tk.NSEW)
         main_frame.columnconfigure(0, weight=1)
 
@@ -227,14 +230,14 @@ class LeaderboardGui(tk.Tk):
 
         # Session Information
         info_frame = tk.Frame(app_frame)
-        info_frame.grid(row=0, column=0, sticky=tk.NW)
+        info_frame.grid(row=0, column=0, sticky=tk.NSEW, pady=(0, 2))
         self.session_info = []
-        self.build_session_info(info_frame)
+        self.build_session_info(info_frame, info["info"])
 
         # Create a Frame with the header
         header_frame = tk.Frame(app_frame)
         header_frame.grid(row=1, column=0, sticky=tk.NW)
-        self.build_header(header_frame, header)
+        self.build_header(header_frame, info["table"])
 
         frame_canvas = tk.Frame(app_frame)
         frame_canvas.grid(row=2, column=0, pady=(5, 0), sticky=tk.NW)
@@ -249,7 +252,7 @@ class LeaderboardGui(tk.Tk):
         canvas.configure(yscrollcommand=v_scrollbar.set)
 
         table_frame = tk.Frame(canvas)
-        self.table = Table(table_frame, self.font, header, 26)
+        self.table = Table(table_frame, self.font, info["table"], 26)
 
         canvas.create_window((0, 0), window=table_frame, anchor=tk.NW)
 
@@ -262,6 +265,7 @@ class LeaderboardGui(tk.Tk):
 
         self.queue_in = queue_in
         self.data = None
+        self.local_data = {}
         self.local_car_ids = []
         self.delay = 1000
 
@@ -269,6 +273,7 @@ class LeaderboardGui(tk.Tk):
 
     def read_queue(self) -> None:
 
+        logging.debug("Read Queue: reading queue")
         try:
             new_data = self.queue_in.get_nowait()
 
@@ -284,7 +289,7 @@ class LeaderboardGui(tk.Tk):
                 self.update_session()
 
         except queue.Empty:
-            print("Read Queue: queue empty")
+            logging.debug("Read Queue: queue empty")
 
         self.after(self.delay, self.read_queue)
 
@@ -302,24 +307,25 @@ class LeaderboardGui(tk.Tk):
                     new_entries = True
 
         if new_entries:
-            print("Reviced new entry list")
+            logging.debug("Reviced new entry list")
             self.local_car_ids.clear()
             for key in entries.keys():
                 self.local_car_ids.append(entries[key]["car id"])
 
-            print("Clearing leaderboard cell...")
+            logging.debug("Clearing leaderboard cell...")
             self.table.clear_entries()
 
-    def build_session_info(self, parent) -> None:
+    def build_session_info(self, parent, info) -> None:
 
-        for i in range(7):
-            cell = create_cell(parent, "", font=self.font, anchor=tk.NW)
-            cell.grid(row=0, column=i)
+        for i in range(len(info)):
+            width = info[i]["width"]
+            cell = create_cell(
+                parent, "", font=self.info_font, max_width=width, relief=tk.RIDGE)
+            cell.grid(row=0, column=i, padx=2)
             self.session_info.append(cell)
 
     def update_session(self) -> None:
 
-        # TODO
         session = self.data["session"]
         if len(session) > 0:
             for i, cell in enumerate(self.session_info):
@@ -336,19 +342,19 @@ class LeaderboardGui(tk.Tk):
 
                 elif i == 3:
                     air_temps = session["air temp"]
-                    cell.configure(text=f"Air Temps: {air_temps}°C")
+                    cell.configure(text=f"Air: {air_temps}°C")
 
                 elif i == 4:
                     track_temps = session["track temp"]
-                    cell.configure(text=f"Track Temps: {track_temps}°C")
+                    cell.configure(text=f"Track: {track_temps}°C")
 
                 elif i == 5:
                     clouds = session["clouds"]
-                    cell.configure(text=f"Clouds cover: {clouds}%")
+                    cell.configure(text=f"Clouds: {clouds}%")
 
                 elif i == 6:
                     rain_level = session["rain level"]
-                    cell.configure(text=f"Track Temps: {rain_level}%")
+                    cell.configure(text=f"Rain: {rain_level}%")
 
                 elif i == 7:
                     wetness = session["wetness"]
@@ -379,7 +385,8 @@ class LeaderboardGui(tk.Tk):
 
 def acc_run(info: dict, q: queue.Queue):
 
-    print("Starting ACC Worker Thread...")
+    logging.info("Starting ACC Worker Thread...")
+
     global stop_worker
 
     socket = info["socket"]
@@ -415,7 +422,7 @@ def acc_run(info: dict, q: queue.Queue):
                 last_message = now
                 q.put(data_copy)
 
-    print("Closing ACC Worker Thread...")
+    logging.info("Closing ACC Worker Thread...")
     instance.disconnect()
 
 
@@ -423,64 +430,101 @@ stop_worker = False
 
 if __name__ == "__main__":
 
-    table_header = [
-        {
-            "text": "Rank",
-            "width": 4
-        },
-        {
-            "text": "Car",
-            "width": 3
-        },
-        {
-            "text": "Class",
-            "width": 5
-        },
-        {
-            "text": "Brand",
-            "width": 5
-        },
-        {
-            "text": "Team\nDriver",
-            "width": 30
-        },
-        {
-            "text": "Best",
-            "width": 8
-        },
-        {
-            "text": "Current",
-            "width": 8
-        },
-        {
-            "text": "Lap",
-            "width": 3
-        },
-        {
-            "text": "Last\nGap",
-            "width": 8
-        },
-        {
-            "text": "S1",
-            "width": 8
-        },
-        {
-            "text": "S2",
-            "width": 8
-        },
-        {
-            "text": "S3",
-            "width": 8
-        },
-        {
-            "text": "Stops",
-            "width": 5
-        },
-        {
-            # Location
-            "text": "",
-            "width": 3
-        }]
+    gui_info = {
+        "info": [
+            {
+                "layout": "Session",
+                "width": 16
+            },
+            {
+                "layout": "Time left",
+                "width": 17
+            },
+            {
+                "layout": "Time elapsed",
+                "width": 21
+            },
+            {
+                "layout": "Air Temps",
+                "width": 9
+            },
+            {
+                "layout": "Track Temps",
+                "width": 11
+            },
+            {
+                "layout": "Clouds",
+                "width": 12
+            },
+            {
+                "layout": "Rain",
+                "width": 10
+            },
+            {
+                "layout": "Wetness",
+                "width": 14
+            }
+        ],
+        "table": [
+            {
+                "text": "Rank",
+                "width": 4
+            },
+            {
+                "text": "Car",
+                "width": 3
+            },
+            {
+                "text": "Class",
+                "width": 5
+            },
+            {
+                "text": "Brand",
+                "width": 5
+            },
+            {
+                "text": "Team\nDriver",
+                "width": 30
+            },
+            {
+                "text": "Best",
+                "width": 8
+            },
+            {
+                "text": "Current",
+                "width": 8
+            },
+            {
+                "text": "Lap",
+                "width": 3
+            },
+            {
+                "text": "Last\nGap",
+                "width": 8
+            },
+            {
+                "text": "S1",
+                "width": 8
+            },
+            {
+                "text": "S2",
+                "width": 8
+            },
+            {
+                "text": "S3",
+                "width": 8
+            },
+            {
+                "text": "Stops",
+                "width": 5
+            },
+            {
+                # Location
+                "text": "",
+                "width": 3
+            }
+        ]
+    }
 
     args = sys.argv
     argc = len(args)
@@ -527,7 +571,7 @@ if __name__ == "__main__":
     thread_acc = threading.Thread(target=acc_run, args=(instance_info, q))
     thread_acc.start()
 
-    gui = LeaderboardGui(queue_in=q, header=table_header)
+    gui = LeaderboardGui(queue_in=q, info=gui_info)
 
     gui.mainloop()
 
@@ -535,4 +579,4 @@ if __name__ == "__main__":
 
     thread_acc.join()
     sock.close()
-    print("Socket closed")
+    logging.info("Socket closed")
