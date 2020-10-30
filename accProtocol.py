@@ -1,6 +1,6 @@
 import datetime
 import socket
-import sys
+import logging
 from enum import Enum, auto
 
 from Cursor import Cursor, ByteWritter
@@ -394,7 +394,7 @@ class EntryList:
                 car_info = car
 
         if not car_info:
-            print("Entry List Car: Car ID Unknow")
+            logging.debug("Entry List Car: Car ID Unknow")
             return
 
         car_info.update(cur)
@@ -457,7 +457,7 @@ class Leaderboard:
         data = None
         try:
             data, addr = self._socket.recvfrom(2048)
-            # print(data, addr)  # Debug
+            # logging.debug(data, addr) # TODO Crash logging
 
         except socket.error:
             self.connected = False
@@ -474,38 +474,37 @@ class Leaderboard:
             packet_type = cur.read_u8()
 
             if packet_type == 1:
-                print("Receving Registration Result")
+                logging.debug("Receving Registration Result")
                 self.registration.update(cur)
 
                 self.request_track_data()
                 self.request_entry_list()
 
             elif packet_type == 2:
-                # print("Receving Real Time Update")
+                logging.debug("Receving Real Time Update")
                 self.session.update(cur)
                 self.update_leaderboard_session()
 
             elif packet_type == 3:
-                # print("Receving Real Time Car Update")
+                logging.debug("Receving Real Time Car Update")
                 car_update = RealTimeCarUpdate(cur)
                 self.is_new_entry(car_update)
 
             elif packet_type == 4:
-                print("Receving Entry List")
+                logging.debug("Receving Entry List")
                 self.entry_list.update(cur)
                 self.add_to_leaderboard()
 
             elif packet_type == 5:
-                print("Receving Track Data")
+                logging.debug("Receving Track Data")
                 self.track.update(cur)
 
             elif packet_type == 6:
-                # print("Receving Entry List Car")
+                logging.debug("Receving Entry List Car")
                 self.entry_list.update_car(cur)
 
             elif packet_type == 7:
-                # print(" Receving Broadcasting Event => Don't care (:")
-                pass
+                logging.debug(" Receving Broadcasting Event => Don't care (:")
 
     def is_new_entry(self, car_update):
 
@@ -601,7 +600,7 @@ class Leaderboard:
         msg.write_i32(speed)
         msg.write_str(cmd_psw)
 
-        print(f"Request Connection: {list(msg.get_bytes())}")
+        logging.debug(f"Request Connection: {list(msg.get_bytes())}")
         self._socket.sendto(msg.get_bytes(), (self._ip, self._port))
         self.connected = True
 
@@ -610,7 +609,7 @@ class Leaderboard:
         msg = ByteWritter()
         msg.write_u8(9)
 
-        print(f"Disconnect request: {list(msg.get_bytes())}")
+        logging.debug(f"Disconnect request: {list(msg.get_bytes())}")
         self._socket.sendto(msg.get_bytes(), (self._ip, self._port))
 
     def request_entry_list(self) -> None:
@@ -623,11 +622,11 @@ class Leaderboard:
             msg.write_u8(10)
             msg.write_i32(c_id)
 
-            print(f"Request Entry List: {list(msg.get_bytes())}")
+            logging.debug(f"Request Entry List: {list(msg.get_bytes())}")
             self._socket.sendto(msg.get_bytes(), (self._ip, self._port))
 
         else:
-            print("Request Entry List: No Connection ID !")
+            logging.debug("Request Entry List: No Connection ID !")
 
     def request_track_data(self) -> None:
 
@@ -637,5 +636,5 @@ class Leaderboard:
         msg.write_u8(11)
         msg.write_i32(c_id)
 
-        print(f"Request Track Data: {list(msg.get_bytes())}")
+        logging.debug(f"Request Track Data: {list(msg.get_bytes())}")
         self._socket.sendto(msg.get_bytes(), (self._ip, self._port))
