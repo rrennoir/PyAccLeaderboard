@@ -433,13 +433,13 @@ class Leaderboard:
         self.leaderboard_data = {
             "entries": {},
             "session": {
-                "session type": SessionType.NONE.name,
-                "session time": datetime.datetime.fromtimestamp(0),
-                "session end time": datetime.datetime.fromtimestamp(0),
-                "air temp": 0,
-                "track temp": 0,
+                "session_type": SessionType.NONE.name,
+                "session_time": datetime.datetime.fromtimestamp(0),
+                "session_end_time": datetime.datetime.fromtimestamp(0),
+                "air_temp": 0,
+                "track_temp": 0,
                 "clouds": 0,
-                "rain level": 0,
+                "rain_level": 0,
                 "wetness": 0
             },
         }
@@ -558,22 +558,22 @@ class Leaderboard:
 
         self.leaderboard_data["entries"][data.car_index].update({
             "position": data.position,
-            "car number": race_number,
-            "car id": data.car_index,
-            "cup category": cup_category.name,
-            "cup position": data.cup_position,
+            "car_number": race_number,
+            "car_id": data.car_index,
+            "cup_category": cup_category.name,
+            "cup_position": data.cup_position,
             "manufacturer": model_type,
             "team": team_name,
             "driver": {
-                "first name": first_name,
-                "last name": last_name,
+                "first_name": first_name,
+                "last_name": last_name,
             },
             "lap": data.lap,
-            "current lap": data.current_lap.lap_time_ms,
-            "last lap": data.last_lap.lap_time_ms,
-            "best session lap": data.best_session_lap.lap_time_ms,
+            "current_lap": data.current_lap.lap_time_ms,
+            "last_lap": data.last_lap.lap_time_ms,
+            "best_session_lap": data.best_session_lap.lap_time_ms,
             "sectors": data.last_lap.splits,
-            "car location": data.car_location.name
+            "car_location": data.car_location.name
         })
 
     def update_leaderboard_session(self) -> None:
@@ -581,13 +581,13 @@ class Leaderboard:
         session = self.leaderboard_data["session"]
         session.clear()
 
-        session["session type"] = self.session.session_type.name
-        session["session time"] = self.session.session_time
-        session["session end time"] = self.session.session_end_time
-        session["air temp"] = self.session.ambient_temp
-        session["track temp"] = self.session.track_temp
+        session["session_type"] = self.session.session_type.name
+        session["session_time"] = self.session.session_time
+        session["session_end_time"] = self.session.session_end_time
+        session["air_temp"] = self.session.ambient_temp
+        session["track_temp"] = self.session.track_temp
         session["clouds"] = self.session.clouds
-        session["rain level"] = self.session.rain_level
+        session["rain_level"] = self.session.rain_level
         session["wetness"] = self.session.wetness
 
     def connect(self, name: str, psw: str, speed: int, cmd_psw: str) -> None:
