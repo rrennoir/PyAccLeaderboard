@@ -488,11 +488,26 @@ if __name__ == "__main__":
     ip = "127.0.0.1"
     port = 9000
 
-    if argc > 1:
-        ip = args[1]
+    for arg in args:
+        if arg.startswith("-ip"):
+            ip = args[1][3:]
 
-    if argc > 2:
-        port = int(args[2])
+        if arg.startswith("-p"):
+            port = int(arg[2:])
+
+    log_format = "%(asctime)s - %(levelname)s: %(message)s"
+    time_format = "%H:%M:%S"
+    if "-log" in args:
+        logging.basicConfig(format=log_format,
+                            level=logging.INFO, datefmt=time_format)
+
+    elif "-debug" in args:
+        logging.basicConfig(format=log_format,
+                            level=logging.DEBUG, datefmt=time_format)
+
+    else:
+        logging.basicConfig(format=log_format,
+                            level=logging.WARNING, datefmt=time_format)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(("", 3400))
