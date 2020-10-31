@@ -2,6 +2,23 @@
 
 ![app](./images/app.png)
 
+## Version 0.5
+
+* Improved session info UI
+* Added pit stop counter
+* Replace print with the logging module
+* Move byte writting function into the Cursor module
+* Improved command line args
+
+### The new command line args
+
+`phython main.py [-ip"X"] [-pX] [-log] [-debug]`
+
+* `-log` Log basic information during the runtime
+* `-debug` Log everything happening during the runtime
+* `-ip"target ip"` Change default ip (local host) to the specified one (`" "` are mandatory, crash orther wise :flushed: )
+* `-p"traget port"` Change default port (9000) to the specified one
+
 ## Version 0.4
 
 * Major GUI redesing
