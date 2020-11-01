@@ -393,11 +393,8 @@ class EntryList:
             if car.car_index == car_id:
                 car_info = car
 
-        if not car_info:
-            logging.debug("Entry List Car: Car ID Unknow")
-            return
-
-        car_info.update(cur)
+        if car_info:
+            car_info.update(cur)
 
 
 class DriverInfo():
@@ -457,7 +454,7 @@ class Leaderboard:
         data = None
         try:
             data, addr = self._socket.recvfrom(2048)
-            # logging.debug(data, addr) # TODO Crash logging
+            # logging.debug(f"Bytes: {data}\nFrom: {addr}")
 
         except socket.error:
             self.connected = False
@@ -474,37 +471,33 @@ class Leaderboard:
             packet_type = cur.read_u8()
 
             if packet_type == 1:
-                logging.debug("Receving Registration Result")
                 self.registration.update(cur)
 
                 self.request_track_data()
                 self.request_entry_list()
 
             elif packet_type == 2:
-                logging.debug("Receving Real Time Update")
                 self.session.update(cur)
+                # print(self.session.session_end_time)
                 self.update_leaderboard_session()
 
             elif packet_type == 3:
-                logging.debug("Receving Real Time Car Update")
                 car_update = RealTimeCarUpdate(cur)
                 self.is_new_entry(car_update)
 
             elif packet_type == 4:
-                logging.debug("Receving Entry List")
                 self.entry_list.update(cur)
                 self.add_to_leaderboard()
 
             elif packet_type == 5:
-                logging.debug("Receving Track Data")
                 self.track.update(cur)
 
             elif packet_type == 6:
-                logging.debug("Receving Entry List Car")
                 self.entry_list.update_car(cur)
 
             elif packet_type == 7:
-                logging.debug(" Receving Broadcasting Event => Don't care (:")
+                # Don't care (:
+                pass
 
     def is_new_entry(self, car_update):
 
@@ -624,9 +617,6 @@ class Leaderboard:
 
             logging.debug(f"Request Entry List: {list(msg.get_bytes())}")
             self._socket.sendto(msg.get_bytes(), (self._ip, self._port))
-
-        else:
-            logging.debug("Request Entry List: No Connection ID !")
 
     def request_track_data(self) -> None:
 
