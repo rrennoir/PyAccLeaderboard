@@ -43,11 +43,12 @@ def from_date_time(time: datetime.datetime) -> str:
     Return a string in format hh:mm:ss
     """
 
-    if time.day == 2:
-        hours = 24
+    days = time.day - 1
+    hours = time.hour
+    minutes = time.minute
+    seconds = time.second
 
-    else:
-        hours = time.hour - 1
+    hours = days * 24 + hours - 1
 
     if hours < 10:
         hours = f"0{hours}"
