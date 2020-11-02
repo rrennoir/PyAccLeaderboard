@@ -84,11 +84,13 @@ def create_cell(parent, text, bg="white", font=None, max_width=0,
 
 class Table(tk.Frame):
 
-    def __init__(self, parent, font, header, row=1) -> None:
+    def __init__(self, parent, font, header, color_1, color_2, row=1) -> None:
         tk.Frame.__init__(self, parent)
         self.row = row
         self.column = len(header)
         self.labels = []
+        self.color_1 = color_1
+        self.color_2 = color_2
 
         for i in range(self.row):
             column_labels = []
@@ -96,10 +98,10 @@ class Table(tk.Frame):
 
                 width = header[j]["width"]
                 if i % 2 == 0:
-                    background = "#c0c0c0"
+                    background = self.color_1
 
                 else:
-                    background = "#a0a0a0"
+                    background = self.color_2
 
                 if j == 4:
                     label = create_cell(
@@ -134,6 +136,9 @@ class Table(tk.Frame):
         for grid_y in range(nb_entries):
 
             for grid_x in range(self.column):
+
+                color_changed = False
+                color = None
 
                 if grid_x == 0:
                     string = entries[grid_y]["position"]
@@ -182,20 +187,43 @@ class Table(tk.Frame):
                 elif grid_x == 13:
 
                     location = entries[grid_y]["car_location"]
+                    color_changed = True
                     if location == "Track":
-                        # Gas station emoji
-                        string = "\U0001F3CE"
+                        string = ""
+
+                        if grid_y % 2 == 0:
+                            color = self.color_1
+
+                        else:
+                            color = self.color_2
 
                     else:
-                        # Race car emoji
+                        # Gas station emoji
                         string = "\u26FD"
+
+                        if location == "Pitlane":
+                            color = "red"
+
+                        elif location == "PitEntry":
+                            color = "blue"
+
+                        elif location == "PitExit":
+                            color = "green"
 
                 else:
                     string = ""
 
-                self.labels[grid_y][grid_x].configure(text=string)
+                if color_changed:
+                    self.labels[grid_y][grid_x].configure(
+                        text=string, bg=color)
+
+                else:
+                    self.labels[grid_y][grid_x].configure(text=string)
 
     def clear_entries(self) -> None:
+        """
+        Clear all entries in the table
+        """
 
         for grid_y in range(self.row):
             for grid_x in range(self.column):
@@ -223,7 +251,7 @@ class LeaderboardGui(tk.Tk):
 
         # App Frame for leaderboard and orther info
         app_frame = tk.Frame(main_frame, bd=2, relief=tk.SUNKEN)
-        app_frame.grid(row=0, column=0)
+        app_frame.grid(row=0, column=0, sticky=tk.NSEW)
 
         # Session Information
         info_frame = tk.Frame(app_frame)
@@ -249,7 +277,8 @@ class LeaderboardGui(tk.Tk):
         canvas.configure(yscrollcommand=v_scrollbar.set)
 
         table_frame = tk.Frame(canvas)
-        self.table = Table(table_frame, self.font, info["table"], 82)
+        self.table = Table(
+            table_frame, self.font, info["table"], "#c0c0c0", "#a0a0a0", 82)
 
         canvas.create_window((0, 0), window=table_frame, anchor=tk.NW)
 
@@ -355,6 +384,7 @@ class LeaderboardGui(tk.Tk):
             cell = create_cell(
                 parent, "", font=self.info_font,
                 max_width=width, relief=tk.RIDGE)
+
             cell.grid(row=0, column=i, padx=2)
             self.session_info.append(cell)
 
@@ -419,7 +449,7 @@ class LeaderboardGui(tk.Tk):
 
 def acc_run(info: dict, q: queue.Queue):
 
-    logging.info("Starting ACC Worker Thread...")
+    logging.debug("Starting ACC Worker Thread...")
 
     global stop_worker
 
@@ -456,7 +486,7 @@ def acc_run(info: dict, q: queue.Queue):
                 last_message = now
                 q.put(data_copy)
 
-    logging.info("Closing ACC Worker Thread...")
+    logging.debug("Closing ACC Worker Thread...")
     instance.disconnect()
 
 
@@ -575,11 +605,7 @@ if __name__ == "__main__":
 
     log_format = "%(asctime)s - %(levelname)s: %(message)s"
     time_format = "%H:%M:%S"
-    if "-log" in args:
-        logging.basicConfig(format=log_format,
-                            level=logging.INFO, datefmt=time_format)
-
-    elif "-debug" in args:
+    if "-debug" in args:
         logging.basicConfig(format=log_format,
                             level=logging.DEBUG, datefmt=time_format)
 
@@ -613,4 +639,4 @@ if __name__ == "__main__":
 
     thread_acc.join()
     sock.close()
-    logging.info("Socket closed")
+    logging.debug("Socket closed")
