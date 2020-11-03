@@ -296,7 +296,7 @@ class LeaderboardGui(tk.Tk):
             "entries": {}
         }
         self.local_car_ids = []
-        self.delay = 400
+        self.delay = 500
 
         self.after(self.delay, self.read_queue)
 
@@ -481,7 +481,7 @@ def acc_run(info: dict, q: queue.Queue):
 
             # Send data to the queue at the same rate
             # as the GUI check the queue
-            if (now - last_message).total_seconds() > 0.5:
+            if (now - last_message).total_seconds() > 0.550:
                 data_copy = copy.deepcopy(instance.leaderboard_data)
                 last_message = now
                 q.put(data_copy)
