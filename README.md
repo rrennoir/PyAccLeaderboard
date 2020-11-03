@@ -2,7 +2,26 @@
 
 ![app](./images/app.png)
 
-## Version 0.5
+## Usage
+
+`phython main.py [-ip"X"] [-pX] [-debug]`
+
+* no args will use local host and port 9000 to connect to the UDP interface
+* `-debug` Log everything happening during the runtime
+* `-ip"target ip"` Change default ip (local host) to the specified one (`" "` are mandatory, crash orther wise :flushed: ) *eg: python main.py -ip"192.168.1.2"*
+* `-p"traget port"` Change default port (9000) to the specified one *eg: python main.py -p9000*
+
+## Changelogs
+
+### Version 0.6
+
+* Added colored background to differenciate Pitlane (Red), PitEntry (Blue) and PitExit (Green)
+* Fixed from_date_time() for more than 23h race
+* Gui now update every 500ms (instead of 1000ms)
+* Changed README.md
+* Yes Version 0.6 changes are lame.
+
+### Version 0.5
 
 * Improved session info UI
 * Added pit stop counter
@@ -10,7 +29,7 @@
 * Move byte writting function into the Cursor module
 * Improved command line args
 
-### The new command line args
+#### The new command line args
 
 `phython main.py [-ip"X"] [-pX] [-log] [-debug]`
 
@@ -19,7 +38,7 @@
 * `-ip"target ip"` Change default ip (local host) to the specified one (`" "` are mandatory, crash orther wise :flushed: )
 * `-p"traget port"` Change default port (9000) to the specified one
 
-## Version 0.4
+### Version 0.4
 
 * Major GUI redesing
 * Add a font that doesn't looks like shit :joy:
@@ -32,7 +51,7 @@
 * Updated accProtocol to get session information
 * Plus other stuff that I already forgot ...
 
-## Version 0.3
+### Version 0.3
 
 * Handle error and timeout, now even if the game is closed or the session is over the app **shouldn't** crash and wait to reconnect
 * ACC worker thread handle socket stuff by itself
@@ -42,11 +61,11 @@
 * Make the first letter uppercase in the previous patch note because uppercase life matters :neckbeard:
 * EMOJI EVERYWHERE !!! :smiling_imp: :blush:
 
-## Version 0.2.1
+### Version 0.2.1
 
 * Added command line args for ip and port => `python main.py [ip] [port]`, no args will use localhost and port 9000
 
-## Version 0.2
+### Version 0.2
 
 * I still don't know what I'm doing with threads, but it should :tm: be better
 * Bug fixes
@@ -54,7 +73,7 @@
 * New GUI theme to make the eyes suffer less
 * Removed nords for sanity
 
-## Version 0.1
+### Version 0.1
 
 * Idk what I'm doing with thread, plz don't @me
 * It might dead lock
