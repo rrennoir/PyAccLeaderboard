@@ -13,6 +13,10 @@
 
 ## Changelogs
 
+### Version 0.6.2
+
+* Add Manufacturer logos instead of showing car model id
+
 ### Version 0.6.1
 
 * Fixed a case when decoding a bytes could fail
