@@ -13,6 +13,14 @@
 
 ## Changelogs
 
+### Version 0.6.1
+
+* Fixed a case when decoding a bytes could fail
+* Fixed a crash when using the app in a session with no time limit
+* Fixed my incompetent writting ***again***
+* Fixed a bug that could occure when writting an emoji
+* Fixed a crash when reading acc messy unicode 😂 (like if a driver put an unicode emoji in his name)
+
 ### Version 0.6
 
 * Added colored background to differenciate Pitlane (Red), PitEntry (Blue) and PitExit (Green)
