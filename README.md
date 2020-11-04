@@ -23,7 +23,7 @@
 
 ### Version 0.6
 
-* Added colored background to differenciate Pitlane (Red), PitEntry (Blue) and PitExit (Green)
+* Added colored background to differentiate Pitlane (Red), PitEntry (Blue) and PitExit (Green)
 * Fixed from_date_time() for more than 23h race
 * Gui now update every 500ms (instead of 1000ms)
 * Changed README.md
