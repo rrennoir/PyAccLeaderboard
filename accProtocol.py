@@ -3,7 +3,7 @@ import socket
 import logging
 from enum import Enum, auto
 
-from Cursor import Cursor, ByteWritter
+from Cursor import Cursor, ByteWriter
 
 
 class Nationality(Enum):
