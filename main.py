@@ -1,14 +1,175 @@
 import copy
 import datetime
+from PIL import Image, ImageTk
 import queue
 import logging
 import socket
 import sys
+import time
 import threading
 import tkinter as tk
 from tkinter.font import Font
 
 import accProtocol
+
+brands = {
+    0: {
+        "Brand": "Porsche",
+        "Model": "Porsche 991 GT3 R (2018)"
+    },
+    1: {
+        "Brand": "AMG",
+        "Model": "Mercedes-AMG GT3 (2015)"
+    },
+    2: {
+        "Brand": "Ferrari",
+        "Model": "Ferrari 488 GT3 (2018)"
+    },
+    3: {
+        "Brand": "Audi",
+        "Model": "Audi R8 LMS GT3 (2015)"
+    },
+    4: {
+        "Brand": "Lamborghini",
+        "Model": "Lamborghini Huracan GT3 (2015)"
+    },
+    5: {
+        "Brand": "McLaren",
+        "Model": "McLaren 650s GT3 (2015)"
+    },
+    6: {
+        "Brand": "Nissan",
+        "Model": "Nissan GT-R Nismo GT3 (2018)"
+    },
+    7: {
+        "Brand": "BMW",
+        "Model": "BMW M6 GT3 (2017)"
+    },
+    8: {
+        "Brand": "Bentley",
+        "Model": "Bentley Continental GT3 (2019)"
+    },
+    9: {
+        "Brand": "Porsche",
+        "Model": "Porsche 991.2 GT3 Cup (2017)"
+    },
+    10: {
+        "Brand": "Nissan",
+        "Model": "Nissan GT-R Nismo GT3 (2015)"
+    },
+    11: {
+        "Brand": "Bentley",
+        "Model": "Bentley Continental GT3 (2015)"
+    },
+    12: {
+        "Brand": "Aston",
+        "Model": "Aston Martin Vantage V12 GT3 (2013)"
+    },
+    13: {
+        "Brand": "Reiter",
+        "Model": "Lamborghini Gallardo R-EX GT3 (2017)"
+    },
+    14: {
+        "Brand": "Jaguar",
+        "Model": "Jaguar G3 GT3 (2012)"
+    },
+    15: {
+        "Brand": "Lexus",
+        "Model": "Lexus RF C GT3 (2017)"
+    },
+    16: {
+        "Brand": "Lamborghini",
+        "Model": "Lamborghini Huracan Evo GT3 (2019)"
+    },
+    17: {
+        "Brand": "Honda",
+        "Model": "Honda NSX GT3 (2017)"
+    },
+    18: {
+        "Brand": "Lamborghini",
+        "Model": "Lamborghini Huracan SuperTrofeo (2015)"
+    },
+    19: {
+        "Brand": "Audi",
+        "Model": "Audi R8 LMS Evo GT3 (2019)"
+    },
+    20: {
+        "Brand": "Honda",
+        "Model": "Honda NSX GT3 (2019)"
+    },
+    21: {
+        "Brand": "Honda",
+        "Model": "Honda NSX GT3 (2019)"
+    },
+    22: {
+        "Brand": "McLaren",
+        "Model": "McLaren 720s GT3 (2019)"
+    },
+    23: {
+        "Brand": "Porsche",
+        "Model": "Porsche 991II GT3 R (2019)"
+    },
+    50: {
+        "Brand": "Alpine",
+        "Model": "Alpine A110 GT4 (2018)"
+    },
+    51: {
+        "Brand": "Aston",
+        "Model": "Aston Martin Vantage V8 GT4 (2018)"
+    },
+    52: {
+        "Brand": "Audi",
+        "Model": "Audi R8 LMS GT4 (2018)"
+    },
+    53: {
+        "Brand": "BMW",
+        "Model": "BMW M4 GT4 (2018)"
+    },
+    55: {
+        "Brand": "Chevrolet",
+        "Model": "Chevrolet Camaro GT4 (2017)"
+    },
+    56: {
+        "Brand": "Ginetta",
+        "Model": "Ginetta G55 GT4 (2012)"
+    },
+    57: {
+        "Brand": "KTM",
+        "Model": "KTM X-Bow GT (2016)"
+    },
+    58: {
+        "Brand": "Maserati",
+        "Model": "Maserati MC GT4 (2016)"
+    },
+    59: {
+        "Brand": "McLaren",
+        "Model": "McLaren 570s GT4 (2016)"
+    },
+    60: {
+        "Brand": "AMG",
+        "Model": "Mercedes-AMG GT4 (2016)"
+    },
+    61: {
+        "Brand": "Porsche",
+        "Model": "Porsche 718 Cayman GT4 (2019)"
+    },
+}
+
+
+def load_images() -> dict:
+
+    image_cache = {}
+    for car_model in brands.keys():
+
+        name = brands[car_model]["Brand"]
+
+        if name not in image_cache:
+            file = Image.open(f"images/logos/{name}.png")
+            image = ImageTk.PhotoImage(file)
+            image_cache[name] = image
+            file.close()
+
+        brands[car_model]["Logo"] = image_cache[name]
 
 
 def from_ms(time: int) -> str:
@@ -91,6 +252,7 @@ class Table(tk.Frame):
         self.labels = []
         self.color_1 = color_1
         self.color_2 = color_2
+        load_images()
 
         for i in range(self.row):
             column_labels = []
@@ -150,7 +312,24 @@ class Table(tk.Frame):
                     string = entries[grid_y]["cup_category"]
 
                 elif grid_x == 3:
-                    string = entries[grid_y]["manufacturer"]
+
+                    model_number = entries[grid_y]["manufacturer"]
+                    logo = brands[model_number]["Logo"]
+
+                    if grid_y % 2 == 0:
+                        color = self.color_1
+
+                    else:
+                        color = self.color_2
+
+                    label = tk.Label(self.master, bg=color, image=logo)
+                    label.image = logo
+                    label.place(x=0, y=0)
+                    label.grid(row=grid_y, column=grid_x,
+                               padx=1, sticky=tk.NSEW)
+
+                    self.labels[grid_y][grid_x] = label
+                    string = ""
 
                 elif grid_x == 4:
                     team = entries[grid_y]["team"]
