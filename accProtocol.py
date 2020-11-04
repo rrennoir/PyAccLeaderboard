@@ -243,8 +243,17 @@ class RealTimeUpdate:
         self.phase = SessionPhase(cur.read_u8())
 
         session_time = cur.read_f32() // 1000
+        if session_time == -1:
+            # -1 means there is no time limit
+            session_time = 0
+
         self.session_time = datetime.datetime.fromtimestamp(session_time)
+
         session_end_time = cur.read_f32() // 1000
+        if session_end_time == -1:
+            # -1 means there is no time limit
+            session_end_time = 0
+
         self.session_end_time = datetime.datetime.fromtimestamp(
             session_end_time)
 
@@ -257,10 +266,18 @@ class RealTimeUpdate:
         self.replay_remaining_time = datetime.datetime.fromtimestamp(0)
 
         if self.is_replay_playing:
-            self.replay_session_time = datetime.datetime.fromtimestamp(
-                cur.read_f32() / 1000)
-            self.replay_remaining_time = datetime.datetime.fromtimestamp(
-                cur.read_f32() / 1000)
+
+            replay_session_time = cur.read_f32() // 1000
+            if replay_session_time != -1:
+                # -1 means there is no time limit
+                self.replay_session_time = datetime.datetime.fromtimestamp(
+                    replay_session_time)
+
+            replay_remaining_time = cur.read_f32() // 1000
+            if replay_remaining_time != -1:
+                # -1 means there is no time limit
+                self.replay_remaining_time = datetime.datetime.fromtimestamp(
+                    replay_remaining_time)
 
         self.time_of_day = datetime.datetime.fromtimestamp(
             cur.read_f32() / 1000)
