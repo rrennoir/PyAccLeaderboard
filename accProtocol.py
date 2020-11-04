@@ -585,7 +585,7 @@ class Leaderboard:
 
     def connect(self, name: str, psw: str, speed: int, cmd_psw: str) -> None:
 
-        msg = ByteWritter()
+        msg = ByteWriter()
         msg.write_u8(1)
         msg.write_u8(4)
         msg.write_str(name)
@@ -599,7 +599,7 @@ class Leaderboard:
 
     def disconnect(self) -> None:
 
-        msg = ByteWritter()
+        msg = ByteWriter()
         msg.write_u8(9)
 
         logging.debug(f"Disconnect request: {list(msg.get_bytes())}")
@@ -611,7 +611,7 @@ class Leaderboard:
 
         if c_id != -1:
 
-            msg = ByteWritter()
+            msg = ByteWriter()
             msg.write_u8(10)
             msg.write_i32(c_id)
 
@@ -622,7 +622,7 @@ class Leaderboard:
 
         c_id = self.registration.connection_id
 
-        msg = ByteWritter()
+        msg = ByteWriter()
         msg.write_u8(11)
         msg.write_i32(c_id)
 

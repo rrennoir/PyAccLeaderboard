@@ -67,7 +67,7 @@ class Cursor:
         return string.decode("utf-8")
 
 
-class ByteWritter:
+class ByteWriter:
 
     def __init__(self) -> None:
         self.bytes_array = b""
