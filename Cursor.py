@@ -95,8 +95,10 @@ class ByteWriter:
         self.bytes_array += struct.pack("<f", data)[0]
 
     def write_str(self, data: str) -> None:
-        self.write_u16(len(data))
-        self.bytes_array += bytearray(data, "utf-8")
+        # ACC does support unicode emoji but I do, hehe 😀
+        byte_data = data.encode("utf-8")
+        self.write_u16(len(byte_data))
+        self.bytes_array += byte_data
 
     def get_bytes(self) -> bytes:
         return self.bytes_array
