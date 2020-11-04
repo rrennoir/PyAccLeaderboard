@@ -64,7 +64,11 @@ class Cursor:
         string = self._byte_array[self._cursor: self._cursor + lenght]
         self._cursor += lenght
 
-        return string.decode("utf-8")
+        # ACC doesn't support unicode emoji (and maybe orther
+        # unicode charactere)
+        # so if an emoji is in a name it put garbage bytes...
+        # 6 bytes of trash idk why, so I ingore them
+        return string.decode("utf-8", errors="ignore")
 
 
 class ByteWriter:
