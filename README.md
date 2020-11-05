@@ -13,6 +13,14 @@
 
 ## Changelogs
 
+### Version 0.7
+
+* Improve performance by a factor of 6, GUI update now take 5ms instead of 30ms, by updating only new data
+* Moving the window doesn't lag anymore :sweat_smile:
+* Changed GUI layout
+* Added track name in session info
+* Reworked update_text() methode
+
 ### Version 0.6.2
 
 * Add Manufacturer logos instead of showing car model id
