@@ -324,17 +324,17 @@ class Table(tk.Frame):
         model_number = entry["manufacturer"]
         if (no_prev_entries or
                 self.old_entries[y]["manufacturer"] != model_number):
-                    logo = brands[model_number]["Logo"]
+            logo = brands[model_number]["Logo"]
 
             if y % 2 == 0:
-                        color = self.color_1
+                color = self.color_1
 
-                    else:
-                        color = self.color_2
+            else:
+                color = self.color_2
 
-                    label = tk.Label(self.master, bg=color, image=logo)
-                    label.image = logo
-                    label.place(x=0, y=0)
+            label = tk.Label(self.master, bg=color, image=logo)
+            label.image = logo
+            label.place(x=0, y=0)
             label.grid(row=y, column=x, padx=1, sticky=tk.NSEW)
             self.labels[y][x] = label
 
@@ -347,7 +347,7 @@ class Table(tk.Frame):
              self.old_entries[y]["driver"]["last_name"] != last_name)):
 
             team = entry["team"]
-                    string = f"{team}\n{first_name} {last_name}"
+            string = f"{team}\n{first_name} {last_name}"
             self.labels[y][x].configure(text=string)
 
     def update_lap_time(self, x, y, lap_type, lap, no_prev_entries):
@@ -375,8 +375,8 @@ class Table(tk.Frame):
     def update_pit_counter(self, x, y, entry, local_data):
 
         car_id = entry["car_id"]
-                    pits = local_data[car_id]["pits"]
-                    string = f"{pits}"
+        pits = local_data[car_id]["pits"]
+        string = f"{pits}"
         self.labels[y][x].configure(text=string)
 
     def update_location(self, x, y, entry, no_prev_entries):
@@ -386,27 +386,27 @@ class Table(tk.Frame):
                 self.old_entries[y]["car_location"] != location):
 
             color = ""
-                    if location == "Track":
-                        string = ""
+            if location == "Track":
+                string = ""
 
                 if y % 2 == 0:
-                            color = self.color_1
+                    color = self.color_1
 
-                        else:
-                            color = self.color_2
+                else:
+                    color = self.color_2
 
-                    else:
-                        # Gas station emoji
-                        string = "\u26FD"
+            else:
+                # Gas station emoji
+                string = "\u26FD"
 
-                        if location == "Pitlane":
-                            color = "red"
+                if location == "Pitlane":
+                    color = "red"
 
-                        elif location == "PitEntry":
-                            color = "blue"
+                elif location == "PitEntry":
+                    color = "blue"
 
-                        elif location == "PitExit":
-                            color = "green"
+                elif location == "PitExit":
+                    color = "green"
 
             self.labels[y][x].configure(text=string, bg=color)
 
@@ -521,21 +521,21 @@ class LeaderboardGui(tk.Tk):
 
         # App Frame for leaderboard and orther info
         app_frame = tk.Frame(main_frame, bd=2, relief=tk.SUNKEN)
-        app_frame.grid(row=0, column=0, sticky=tk.NSEW)
+        app_frame.grid(row=0, column=1, sticky=tk.NSEW)
 
         # Session Information
-        info_frame = tk.Frame(app_frame)
-        info_frame.grid(row=0, column=0, sticky=tk.NSEW, pady=(0, 2))
+        info_frame = tk.Frame(main_frame, bd=2, relief=tk.SUNKEN)
+        info_frame.grid(row=0, column=0, sticky=tk.NSEW)
         self.session_info = []
         self.build_session_info(info_frame, info["info"])
 
         # Create a Frame with the header
         header_frame = tk.Frame(app_frame)
-        header_frame.grid(row=1, column=0, sticky=tk.NW)
+        header_frame.grid(row=0, column=0, sticky=tk.NW, pady=(2, 0))
         self.build_header(header_frame, info["table"])
 
         frame_canvas = tk.Frame(app_frame)
-        frame_canvas.grid(row=2, column=0, pady=(5, 0), sticky=tk.NW)
+        frame_canvas.grid(row=1, column=0, pady=(5, 0), sticky=tk.NW)
 
         canvas = tk.Canvas(frame_canvas)
         canvas.grid(row=0, column=0, sticky=tk.NW)
@@ -543,7 +543,7 @@ class LeaderboardGui(tk.Tk):
         # Create vertical scrollbar to move the table
         v_scrollbar = tk.Scrollbar(
             main_frame, orient=tk.VERTICAL, command=canvas.yview)
-        v_scrollbar.grid(row=0, column=1, sticky=tk.NS)
+        v_scrollbar.grid(row=0, column=2, sticky=tk.NS)
         canvas.configure(yscrollcommand=v_scrollbar.set)
 
         table_frame = tk.Frame(canvas)
@@ -573,6 +573,7 @@ class LeaderboardGui(tk.Tk):
     def read_queue(self) -> None:
 
         logging.debug("Read Queue: reading queue")
+        # start = time.perf_counter()
         try:
             new_data = self.queue_in.get_nowait()
 
@@ -586,6 +587,9 @@ class LeaderboardGui(tk.Tk):
                 self.update_local_entries()
                 self.table.update_text(self.data, self.local_data["entries"])
                 self.update_session()
+
+                # end = time.perf_counter()
+                # print(f"Time: {(end - start) * 1000:.1f} ms")
 
         except queue.Empty:
             logging.debug("Read Queue: queue empty")
@@ -650,12 +654,12 @@ class LeaderboardGui(tk.Tk):
     def build_session_info(self, parent, info) -> None:
 
         for i in range(len(info)):
-            width = info[i]["width"]
+            width = 30  # info[i]["width"]
             cell = create_cell(
                 parent, "", font=self.info_font,
-                max_width=width, relief=tk.RIDGE)
+                max_width=width, relief=tk.RIDGE, anchor=tk.W)
 
-            cell.grid(row=0, column=i, padx=2)
+            cell.grid(row=i, column=0, pady=2, sticky=tk.NW)
             self.session_info.append(cell)
 
     def update_session(self) -> None:
@@ -663,34 +667,38 @@ class LeaderboardGui(tk.Tk):
         session = self.data["session"]
         if len(session) > 0:
             for i, cell in enumerate(self.session_info):
+
                 if i == 0:
+                    cell.configure(text=f"Track: {session['track']}")
+
+                if i == 1:
                     cell.configure(text=f"Session: {session['session_type']}")
 
-                elif i == 1:
+                elif i == 2:
                     time_left = from_date_time(session["session_end_time"])
                     cell.configure(text=f"Time left: {time_left}")
 
-                elif i == 2:
+                elif i == 3:
                     time_elapsed = from_date_time(session['session_time'])
                     cell.configure(text=f"Time elapsed: {time_elapsed}")
 
-                elif i == 3:
+                elif i == 4:
                     air_temps = session["air_temp"]
                     cell.configure(text=f"Air: {air_temps}°C")
 
-                elif i == 4:
+                elif i == 5:
                     track_temps = session["track_temp"]
                     cell.configure(text=f"Track: {track_temps}°C")
 
-                elif i == 5:
+                elif i == 6:
                     clouds = session["clouds"]
                     cell.configure(text=f"Clouds: {clouds}%")
 
-                elif i == 6:
+                elif i == 7:
                     rain_level = session["rain_level"]
                     cell.configure(text=f"Rain: {rain_level}%")
 
-                elif i == 7:
+                elif i == 8:
                     wetness = session["wetness"]
                     cell.configure(text=f"Wetness: {wetness}%")
 
@@ -766,6 +774,10 @@ if __name__ == "__main__":
 
     gui_info = {
         "info": [
+            {
+                "layout": "Track",
+                "width": 20
+            },
             {
                 "layout": "Session",
                 "width": 16
