@@ -618,8 +618,11 @@ class Leaderboard:
 
     def disconnect(self) -> None:
 
+        c_id = self.registration.connection_id
+
         msg = ByteWriter()
         msg.write_u8(9)
+        msg.write_i32(c_id)
 
         logging.debug(f"Disconnect request: {list(msg.get_bytes())}")
         self._socket.sendto(msg.get_bytes(), (self._ip, self._port))
