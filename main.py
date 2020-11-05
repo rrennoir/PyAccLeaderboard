@@ -250,6 +250,7 @@ class Table(tk.Frame):
         self.row = row
         self.column = len(header)
         self.labels = []
+        self.old_entries = []
         self.color_1 = color_1
         self.color_2 = color_2
         load_images()
@@ -277,7 +278,7 @@ class Table(tk.Frame):
 
             self.labels.append(column_labels)
 
-    def update_text(self, data, local_data):
+    def order_entrie_by_position(self, data) -> list:
 
         entries = []
         position = 1
@@ -292,31 +293,40 @@ class Table(tk.Frame):
 
             position += 1
 
-        if nb_entries == 0 or len(entries) == 0:
-            return
+        return entries
 
-        for grid_y in range(nb_entries):
+    def update_position(self, x, y, entry, no_prev_entries):
 
-            for grid_x in range(self.column):
+        position = entry["position"]
+        if (no_prev_entries or
+                self.old_entries[y]["position"] != position):
+            string = position
+            self.labels[y][x].configure(text=string)
 
-                color_changed = False
-                color = None
+    def update_car_number(self, x, y, entry, no_prev_entries):
 
-                if grid_x == 0:
-                    string = entries[grid_y]["position"]
+        car_number = entry["car_number"]
+        if (no_prev_entries or
+                self.old_entries[y]["car_number"] != car_number):
+            string = car_number
+            self.labels[y][x].configure(text=string)
 
-                elif grid_x == 1:
-                    string = entries[grid_y]["car_number"]
+    def update_cup_category(self, x, y, entry, no_prev_entries):
 
-                elif grid_x == 2:
-                    string = entries[grid_y]["cup_category"]
+        cup_category = entry["cup_category"]
+        if (no_prev_entries or
+                self.old_entries[y]["cup_category"] != cup_category):
+            string = cup_category
+            self.labels[y][x].configure(text=string)
 
-                elif grid_x == 3:
+    def update_car_logo(self, x, y, entry, no_prev_entries):
 
-                    model_number = entries[grid_y]["manufacturer"]
+        model_number = entry["manufacturer"]
+        if (no_prev_entries or
+                self.old_entries[y]["manufacturer"] != model_number):
                     logo = brands[model_number]["Logo"]
 
-                    if grid_y % 2 == 0:
+            if y % 2 == 0:
                         color = self.color_1
 
                     else:
@@ -325,52 +335,61 @@ class Table(tk.Frame):
                     label = tk.Label(self.master, bg=color, image=logo)
                     label.image = logo
                     label.place(x=0, y=0)
-                    label.grid(row=grid_y, column=grid_x,
-                               padx=1, sticky=tk.NSEW)
+            label.grid(row=y, column=x, padx=1, sticky=tk.NSEW)
+            self.labels[y][x] = label
 
-                    self.labels[grid_y][grid_x] = label
-                    string = ""
+    def update_driver(self, x, y, entry, no_prev_entries):
 
-                elif grid_x == 4:
-                    team = entries[grid_y]["team"]
-                    first_name = entries[grid_y]["driver"]['first_name']
-                    last_name = entries[grid_y]["driver"]['last_name']
+        first_name = entry["driver"]['first_name']
+        last_name = entry["driver"]['last_name']
+        if (no_prev_entries or
+            (self.old_entries[y]["driver"]["first_name"] != first_name and
+             self.old_entries[y]["driver"]["last_name"] != last_name)):
+
+            team = entry["team"]
                     string = f"{team}\n{first_name} {last_name}"
+            self.labels[y][x].configure(text=string)
 
-                elif grid_x == 5:
-                    string = from_ms(entries[grid_y]["best_session_lap"])
+    def update_lap_time(self, x, y, lap_type, lap, no_prev_entries):
 
-                elif grid_x == 6:
-                    string = from_ms(entries[grid_y]["current_lap"])
+        if (no_prev_entries or
+                self.old_entries[y][lap_type] != lap):
+            string = from_ms(lap)
+            self.labels[y][x].configure(text=string)
 
-                elif grid_x == 7:
-                    string = entries[grid_y]["lap"]
+    def update_lap_counter(self, x, y, entry, no_prev_entries):
 
-                elif grid_x == 8:
-                    string = from_ms(entries[grid_y]["last_lap"])
+        laps = entry["lap"]
+        if no_prev_entries or self.old_entries[y]["lap"] != laps:
+            string = laps
+            self.labels[y][x].configure(text=string)
 
-                elif grid_x == 9 and len(entries[grid_y]["sectors"]) > 0:
-                    string = from_ms(entries[grid_y]["sectors"][0])
+    def update_sector(self, x, y, sector, time, no_prev_entries):
 
-                elif grid_x == 10 and len(entries[grid_y]["sectors"]) > 0:
-                    string = from_ms(entries[grid_y]["sectors"][1])
+        if (no_prev_entries or
+            (len(self.old_entries[y]["sectors"]) > 0 and
+             self.old_entries[y]["sectors"][sector] != time)):
+            string = from_ms(time)
+            self.labels[y][x].configure(text=string)
 
-                elif grid_x == 11 and len(entries[grid_y]["sectors"]) > 0:
-                    string = from_ms(entries[grid_y]["sectors"][2])
+    def update_pit_counter(self, x, y, entry, local_data):
 
-                elif grid_x == 12:
-                    car_id = entries[grid_y]["car_id"]
+        car_id = entry["car_id"]
                     pits = local_data[car_id]["pits"]
                     string = f"{pits}"
+        self.labels[y][x].configure(text=string)
 
-                elif grid_x == 13:
+    def update_location(self, x, y, entry, no_prev_entries):
 
-                    location = entries[grid_y]["car_location"]
-                    color_changed = True
+        location = entry["car_location"]
+        if (no_prev_entries or
+                self.old_entries[y]["car_location"] != location):
+
+            color = ""
                     if location == "Track":
                         string = ""
 
-                        if grid_y % 2 == 0:
+                if y % 2 == 0:
                             color = self.color_1
 
                         else:
@@ -389,15 +408,87 @@ class Table(tk.Frame):
                         elif location == "PitExit":
                             color = "green"
 
-                else:
-                    string = ""
+            self.labels[y][x].configure(text=string, bg=color)
 
-                if color_changed:
-                    self.labels[grid_y][grid_x].configure(
-                        text=string, bg=color)
+    def update_text(self, data, local_data):
+
+        entries = self.order_entrie_by_position(data)
+        nb_entries = len(data["entries"])
+
+        if nb_entries == 0 or len(entries) == 0:
+            return
+
+        for grid_y in range(nb_entries):
+
+            for grid_x in range(self.column):
+
+                no_prev_entries = len(self.old_entries) == 0
+                entry = entries[grid_y]
+                if grid_x == 0:
+                    self.update_position(
+                        grid_x, grid_y, entry, no_prev_entries)
+
+                elif grid_x == 1:
+                    self.update_car_number(
+                        grid_x, grid_y, entry, no_prev_entries)
+
+                elif grid_x == 2:
+                    self.update_cup_category(
+                        grid_x, grid_y, entry, no_prev_entries)
+
+                elif grid_x == 3:
+                    self.update_car_logo(
+                        grid_x, grid_y, entry, no_prev_entries)
+
+                elif grid_x == 4:
+                    self.update_driver(
+                        grid_x, grid_y, entry, no_prev_entries)
+
+                elif grid_x == 5:
+                    self.update_lap_time(
+                        grid_x, grid_y, "best_session_lap",
+                        entry["best_session_lap"], no_prev_entries)
+
+                elif grid_x == 6:
+                    self.update_lap_time(
+                        grid_x, grid_y, "current_lap",
+                        entry["current_lap"], no_prev_entries)
+
+                elif grid_x == 7:
+                    self.update_lap_counter(
+                        grid_x, grid_y, entry, no_prev_entries)
+
+                elif grid_x == 8:
+                    self.update_lap_time(
+                        grid_x, grid_y, "last_lap",
+                        entry["last_lap"], no_prev_entries)
+
+                elif grid_x == 9 and len(entries[grid_y]["sectors"]) > 0:
+                    self.update_sector(
+                        grid_x, grid_y, 0,
+                        entries[grid_y]["sectors"][0], no_prev_entries)
+
+                elif grid_x == 10 and len(entries[grid_y]["sectors"]) > 0:
+                    self.update_sector(
+                        grid_x, grid_y, 1,
+                        entries[grid_y]["sectors"][1], no_prev_entries)
+
+                elif grid_x == 11 and len(entries[grid_y]["sectors"]) > 0:
+                    self.update_sector(
+                        grid_x, grid_y, 2,
+                        entries[grid_y]["sectors"][2], no_prev_entries)
+
+                elif grid_x == 12:
+                    self.update_pit_counter(grid_x, grid_y, entry, local_data)
+
+                elif grid_x == 13:
+                    self.update_location(
+                        grid_x, grid_y, entry, no_prev_entries)
 
                 else:
-                    self.labels[grid_y][grid_x].configure(text=string)
+                    self.labels[grid_y][grid_x].configure(text="")
+
+        self.old_entries = entries
 
     def clear_entries(self) -> None:
         """
