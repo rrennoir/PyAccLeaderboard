@@ -367,7 +367,7 @@ class Table(tk.Frame):
     def update_sector(self, x, y, sector, time, no_prev_entries):
 
         if (no_prev_entries or
-            (len(self.old_entries[y]["sectors"]) > 0 and
+            (len(self.old_entries[y]["sectors"]) == 0 or
              self.old_entries[y]["sectors"][sector] != time)):
             string = from_ms(time)
             self.labels[y][x].configure(text=string)
@@ -488,7 +488,7 @@ class Table(tk.Frame):
                 else:
                     self.labels[grid_y][grid_x].configure(text="")
 
-        self.old_entries = entries
+        self.old_entries = copy.deepcopy(entries)
 
     def clear_entries(self) -> None:
         """
