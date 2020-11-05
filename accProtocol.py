@@ -447,6 +447,7 @@ class Leaderboard:
         self.leaderboard_data = {
             "entries": {},
             "session": {
+                "track": "None",
                 "session_type": SessionType.NONE.name,
                 "session_time": datetime.datetime.fromtimestamp(0),
                 "session_end_time": datetime.datetime.fromtimestamp(0),
@@ -591,6 +592,7 @@ class Leaderboard:
         session = self.leaderboard_data["session"]
         session.clear()
 
+        session["track"] = self.track.track_name
         session["session_type"] = self.session.session_type.name
         session["session_time"] = self.session.session_time
         session["session_end_time"] = self.session.session_end_time
