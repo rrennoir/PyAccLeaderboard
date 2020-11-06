@@ -94,8 +94,8 @@ brands = {
         "Model": "Audi R8 LMS Evo GT3 (2019)"
     },
     20: {
-        "Brand": "Honda",
-        "Model": "Honda NSX GT3 (2019)"
+        "Brand": "Aston",
+        "Model": "Aston Martin Vantage V8 (2019)"
     },
     21: {
         "Brand": "Honda",
