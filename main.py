@@ -529,7 +529,7 @@ class LeaderboardGui(tk.Tk):
         side_frame.grid(row=0, column=0, sticky=tk.NSEW)
 
         # Session Information
-        info_frame = tk.Frame(side_frame, bd=2, relief=tk.SUNKEN, pady=(5, 5))
+        info_frame = tk.Frame(side_frame, bd=2, relief=tk.SUNKEN)
         info_frame.grid(row=0, column=0, sticky=tk.NSEW)
         self.session_info = []
         self.build_session_info(info_frame, info["info"])
