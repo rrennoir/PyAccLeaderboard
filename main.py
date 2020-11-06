@@ -523,12 +523,22 @@ class LeaderboardGui(tk.Tk):
         app_frame = tk.Frame(main_frame, bd=2, relief=tk.SUNKEN)
         app_frame.grid(row=0, column=1, sticky=tk.NSEW)
 
+        # Side Frame with track map and session info
+        # and application info
+        side_frame = tk.Frame(main_frame, bd=2)
+        side_frame.grid(row=0, column=0, sticky=tk.NSEW)
+
         # Session Information
-        info_frame = tk.Frame(main_frame, bd=2, relief=tk.SUNKEN)
+        info_frame = tk.Frame(side_frame, bd=2, relief=tk.SUNKEN, pady=(5, 5))
         info_frame.grid(row=0, column=0, sticky=tk.NSEW)
         self.session_info = []
         self.build_session_info(info_frame, info["info"])
 
+        # Cavas to draw car position in real time
+        # Not working in ACC 1.5.9 :(
+        self.map_canvas = tk.Canvas(
+            side_frame, bd=2, width=256, height=256, relief=tk.SUNKEN)
+        self.map_canvas.grid(row=1, column=0, sticky=tk.NSEW)
         # Create a Frame with the header
         header_frame = tk.Frame(app_frame)
         header_frame.grid(row=0, column=0, sticky=tk.NW, pady=(2, 0))
@@ -596,6 +606,17 @@ class LeaderboardGui(tk.Tk):
 
         self.after(self.delay, self.read_queue)
 
+
+    def update_map(self):
+
+        # Not woking in 1.5.9
+        # world pos x and y are always 0 :(
+        for key in self.data["entries"].keys():
+
+            _ = self.data["entries"][key]["world_pos_x"]
+            _ = self.data["entries"][key]["world_pos_y"]
+
+            # self.map_canvas.create_oval(x, y, x + 1, y + 1, fill="red")
     def update_local_entries(self) -> None:
 
         entries = self.data["entries"]
