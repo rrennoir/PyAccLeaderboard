@@ -13,6 +13,13 @@
 
 ## Changelogs
 
+### Version 0.7.1
+
+* Add more connection info (connection ID, if the app is connected to the UDP interface)
+* Add basic support for live map (not working on acc side for now)
+* Fix UDP message for disconnection, wasn't correct in the C# app shipped with the game #BlameKevin
+* Fix a bug in the sector update logic
+
 ### Version 0.7
 
 * Improve performance by a factor of 6, GUI update now take 5ms instead of 30ms, by updating only new data
