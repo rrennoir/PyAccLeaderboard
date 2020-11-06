@@ -445,6 +445,10 @@ class Leaderboard:
         self.connected = False
 
         self.leaderboard_data = {
+            "connection": {
+                "id": -1,
+                "connected": False
+            },
             "entries": {},
             "session": {
                 "track": "None",
@@ -476,9 +480,11 @@ class Leaderboard:
 
         except socket.error:
             self.connected = False
+            info = self.leaderboard_data["connection"]["connected"] = False
 
         except socket.timeout:
             self.connected = False
+            info = self.leaderboard_data["connection"]["connected"] = False
 
         finally:
             self._socket.settimeout(None)
@@ -490,6 +496,10 @@ class Leaderboard:
 
             if packet_type == 1:
                 self.registration.update(cur)
+
+                info = self.leaderboard_data["connection"]
+                info["id"] = self.registration.connection_id
+                info["connected"] = True
 
                 self.request_track_data()
                 self.request_entry_list()
@@ -584,7 +594,9 @@ class Leaderboard:
             "last_lap": data.last_lap.lap_time_ms,
             "best_session_lap": data.best_session_lap.lap_time_ms,
             "sectors": data.last_lap.splits,
-            "car_location": data.car_location.name
+            "car_location": data.car_location.name,
+            "world_pos_x": data.world_pos_x,
+            "world_pos_y": data.world_pos_y
         })
 
     def update_leaderboard_session(self) -> None:
