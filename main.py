@@ -539,6 +539,13 @@ class LeaderboardGui(tk.Tk):
         self.map_canvas = tk.Canvas(
             side_frame, bd=2, width=256, height=256, relief=tk.SUNKEN)
         self.map_canvas.grid(row=1, column=0, sticky=tk.NSEW)
+
+        # Application info
+        app_info_frame = tk.Frame(side_frame, bd=2, relief=tk.SUNKEN)
+        app_info_frame.grid(row=2, column=0)
+        self.app_info = []
+        self.create_app_info(app_info_frame)
+
         # Create a Frame with the header
         header_frame = tk.Frame(app_frame)
         header_frame.grid(row=0, column=0, sticky=tk.NW, pady=(2, 0))
@@ -566,7 +573,7 @@ class LeaderboardGui(tk.Tk):
         bbox = canvas.bbox(tk.ALL)
 
         w, h = bbox[2] - bbox[1], bbox[3] - bbox[1]
-        dw, dh = int((w / 14) * 14), int((h / 82) * 10)
+        dw, dh = int((w / 14) * 14), int((h / 82) * 14)
         canvas.configure(scrollregion=bbox, width=dw, height=dh)
 
         self.queue_in = queue_in
@@ -597,15 +604,54 @@ class LeaderboardGui(tk.Tk):
                 self.update_local_entries()
                 self.table.update_text(self.data, self.local_data["entries"])
                 self.update_session()
+                # self.update_map() # Not working, ACC side
 
                 # end = time.perf_counter()
                 # print(f"Time: {(end - start) * 1000:.1f} ms")
+
+            self.update_app_info()
 
         except queue.Empty:
             logging.debug("Read Queue: queue empty")
 
         self.after(self.delay, self.read_queue)
 
+    def create_app_info(self, parent):
+
+        cell_id = create_cell(
+            parent, "ID: ", font=self.info_font, anchor=tk.W,
+            relief=tk.RIDGE, max_width=32)
+        cell_id.grid(row=0, column=0, sticky=tk.NSEW)
+        self.app_info.append(cell_id)
+
+        cell_connected = create_cell(
+            parent, "Connected: ", font=self.info_font, anchor=tk.W,
+            relief=tk.RIDGE, max_width=32)
+        cell_connected.grid(row=1, column=0, sticky=tk.NSEW)
+        self.app_info.append(cell_connected)
+
+        info_text = "Made With love by Ryan Rennoir\nVersion 0.7.1"
+        cell_info = create_cell(
+            parent, info_text, font=self.info_font, anchor=tk.W,
+            relief=tk.RIDGE, max_width=32, height=2)
+        cell_info.grid(row=2, column=0, sticky=tk.NSEW)
+        # self.app_info.append(cell_info) No need it won't be updated
+
+    def update_app_info(self):
+
+        for i, cell in enumerate(self.app_info):
+
+            if i == 0:
+                c_id = self.data["connection"]["id"]
+                cell.configure(text=f"ID: {c_id}")
+
+            if i == 1:
+                connected = self.data["connection"]["connected"]
+                if connected:
+                    cell.configure(text=f"Connected: {connected}", bg="green")
+
+                else:
+                    cell.configure(text=f"Connected: {connected}", bg="red")
 
     def update_map(self):
 
@@ -617,6 +663,7 @@ class LeaderboardGui(tk.Tk):
             _ = self.data["entries"][key]["world_pos_y"]
 
             # self.map_canvas.create_oval(x, y, x + 1, y + 1, fill="red")
+
     def update_local_entries(self) -> None:
 
         entries = self.data["entries"]
@@ -675,7 +722,7 @@ class LeaderboardGui(tk.Tk):
     def build_session_info(self, parent, info) -> None:
 
         for i in range(len(info)):
-            width = 30  # info[i]["width"]
+            width = 32  # info[i]["width"]
             cell = create_cell(
                 parent, "", font=self.info_font,
                 max_width=width, relief=tk.RIDGE, anchor=tk.W)
