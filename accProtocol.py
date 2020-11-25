@@ -86,6 +86,12 @@ class Nationality(Enum):
     Ukraine = 75
     Venezuela = 76
     Wales = 77
+    Iran = 78
+    Bahrain = 79
+    Zimbabwe = 80
+    ChineseTaipie = 81
+    Chile = 82
+    Uruguay = 83
 
 
 class CarLocation(Enum):
