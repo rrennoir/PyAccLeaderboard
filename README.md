@@ -13,6 +13,11 @@
 
 ## Changelogs
 
+### Version 0.7.2
+
+* Add Ferrari and AMG Evo support added in ACC 1.6
+* Fixed wrong Aston V8 info
+
 ### Version 0.7.1
 
 * Add more connection info (connection ID, if the app is connected to the UDP interface)
