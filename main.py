@@ -109,6 +109,14 @@ brands = {
         "Brand": "Porsche",
         "Model": "Porsche 991II GT3 R (2019)"
     },
+    24: {
+        "Brand": "Ferrari",
+        "Model": "Ferrari 488 GT3 Evo (2020)"
+    },
+    25: {
+        "Brand": "AMG",
+        "Model": "Mercedes-AMG GT3 (2020)"
+    },
     50: {
         "Brand": "Alpine",
         "Model": "Alpine A110 GT4 (2018)"
