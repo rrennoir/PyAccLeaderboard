@@ -13,6 +13,12 @@
 
 ## Changelogs
 
+# Version 0.7.3
+
+* Added missing nationality, as usual the broadcast example gived by kunos wasn't complet and changelog said nothing about that ...
+* Moved car info to a json file.
+* Fix edge case in track location
+
 ### Version 0.7.2
 
 * Add Ferrari and AMG Evo support added in ACC 1.6
