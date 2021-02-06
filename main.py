@@ -248,7 +248,6 @@ class Table(tk.Frame):
         if (no_prev_entries or
                 self.old_entries[y]["car_location"] != location):
 
-            color = ""
             if location == "Track":
                 string = ""
 
@@ -270,6 +269,11 @@ class Table(tk.Frame):
 
                 elif location == "PitExit":
                     color = "green"
+
+                else:
+                    # edge case when location is none during a pit
+                    # to track transition I guess
+                    color = "purple"
 
             self.labels[y][x].configure(text=string, bg=color)
 
