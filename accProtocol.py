@@ -92,6 +92,13 @@ class Nationality(Enum):
     ChineseTaipie = 81
     Chile = 82
     Uruguay = 83
+    Madagascar = 84
+    placeholder2 = 85
+    placeholder3 = 86
+    placeholder4 = 87
+    placeholder5 = 88
+    placeholder6 = 89
+    placeholder7 = 90
 
 
 class CarLocation(Enum):
