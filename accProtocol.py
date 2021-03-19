@@ -243,9 +243,6 @@ class RealTimeUpdate:
         self.time_of_day = datetime.datetime.fromtimestamp(0)
         self.ambient_temp = -1
         self.track_temp = -1
-        self.clouds = -1
-        self.rain_level = -1
-        self.wetness = -1
         self.best_session_lap = None
 
     def update(self, cur: Cursor):
@@ -296,9 +293,6 @@ class RealTimeUpdate:
             cur.read_f32() / 1000)
         self.ambient_temp = cur.read_u8()
         self.track_temp = cur.read_u8()
-        self.clouds = cur.read_u8() / 10
-        self.rain_level = cur.read_u8() / 10
-        self.wetness = cur.read_u8() / 10
         self.best_session_lap = LapInfo(cur)
 
 
@@ -469,10 +463,7 @@ class Leaderboard:
                 "session_time": datetime.datetime.fromtimestamp(0),
                 "session_end_time": datetime.datetime.fromtimestamp(0),
                 "air_temp": 0,
-                "track_temp": 0,
-                "clouds": 0,
-                "rain_level": 0,
-                "wetness": 0
+                "track_temp": 0
             },
         }
 
@@ -519,7 +510,6 @@ class Leaderboard:
 
             elif packet_type == 2:
                 self.session.update(cur)
-                # print(self.session.session_end_time)
                 self.update_leaderboard_session()
 
             elif packet_type == 3:
@@ -623,9 +613,6 @@ class Leaderboard:
         session["session_end_time"] = self.session.session_end_time
         session["air_temp"] = self.session.ambient_temp
         session["track_temp"] = self.session.track_temp
-        session["clouds"] = self.session.clouds
-        session["rain_level"] = self.session.rain_level
-        session["wetness"] = self.session.wetness
 
     def connect(self, name: str, psw: str, speed: int, cmd_psw: str) -> None:
 
