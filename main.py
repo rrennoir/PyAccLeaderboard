@@ -289,7 +289,7 @@ class Table(tk.Frame):
 
             for grid_x in range(self.column):
 
-                no_prev_entries = len(self.old_entries) == 0
+                no_prev_entries = len(self.old_entries) == 0 or grid_x not in self.old_entries
                 entry = entries[grid_y]
                 if grid_x == 0:
                     self.update_position(
