@@ -159,12 +159,21 @@ class Table(tk.Frame):
         return entries
 
     def update_position(self, x, y, entry, no_prev_entries):
+        # TODO clean this shit
+        try:
 
-        position = entry["position"]
-        if (no_prev_entries or
-                self.old_entries[y]["position"] != position):
-            string = position
-            self.labels[y][x].configure(text=string)
+            position = entry["position"]
+            if (no_prev_entries or
+                    self.old_entries[y]["position"] != position):
+                string = position
+                self.labels[y][x].configure(text=string)
+
+        except IndexError:
+            print(position)
+            print(no_prev_entries)
+            print(y)
+            print(self.old_entries)
+            breakpoint
 
     def update_car_number(self, x, y, entry, no_prev_entries):
 
@@ -368,7 +377,7 @@ class Table(tk.Frame):
                 self.labels[grid_y][grid_x].configure(text="")
 
 
-class LeaderboardGui(tk.Tk):
+class App(tk.Tk):
 
     def __init__(self, queue_in=None, info=None, *args, **kargs) -> None:
         tk.Tk.__init__(self, *args, **kargs)
@@ -625,18 +634,6 @@ class LeaderboardGui(tk.Tk):
                     track_temps = session["track_temp"]
                     cell.configure(text=f"Track: {track_temps}°C")
 
-                elif i == 6:
-                    clouds = session["clouds"]
-                    cell.configure(text=f"Clouds: {clouds}%")
-
-                elif i == 7:
-                    rain_level = session["rain_level"]
-                    cell.configure(text=f"Rain: {rain_level}%")
-
-                elif i == 8:
-                    wetness = session["wetness"]
-                    cell.configure(text=f"Wetness: {wetness}%")
-
     def build_header(self, parent, header) -> None:
 
         for column, info in enumerate(header):
@@ -732,18 +729,6 @@ if __name__ == "__main__":
             {
                 "layout": "Track Temps",
                 "width": 11
-            },
-            {
-                "layout": "Clouds",
-                "width": 12
-            },
-            {
-                "layout": "Rain",
-                "width": 10
-            },
-            {
-                "layout": "Wetness",
-                "width": 14
             }
         ],
         "table": [
@@ -848,9 +833,8 @@ if __name__ == "__main__":
     thread_acc = threading.Thread(target=acc_run, args=(instance_info, q))
     thread_acc.start()
 
-    gui = LeaderboardGui(queue_in=q, info=gui_info)
-
-    gui.mainloop()
+    app = App(queue_in=q, info=gui_info)
+    app.mainloop()
 
     stop_worker = True
 
