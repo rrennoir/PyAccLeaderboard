@@ -13,7 +13,12 @@
 
 ## Changelogs
 
-# Version 0.7.3
+### Version 0.7.4
+
+* Potential crash when a player join shoud be fixed.
+* Removed Cloud cover, Wetness, Rain intensity since it's not longer available in the UDP interface.
+* Added Madagascar in the nationalities.
+### Version 0.7.3
 
 * Added missing nationality, as usual the broadcast example gived by kunos wasn't complet and changelog said nothing about that ...
 * Moved car info to a json file.
